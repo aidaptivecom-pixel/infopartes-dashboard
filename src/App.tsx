@@ -138,8 +138,8 @@ const App: React.FC = () => {
   const showPageTitle = !viewsWithOwnHeader.includes(currentView);
 
   return (
-    <div className="min-h-screen bg-[#E5E7EB] p-4">
-      <div className="flex flex-col h-[calc(100vh-32px)] rounded-3xl overflow-hidden shadow-xl bg-white">
+    <div className="min-h-screen bg-[#E5E7EB] p-4 flex justify-center">
+      <div className="flex flex-col h-[calc(100vh-32px)] w-full max-w-[1600px] rounded-3xl overflow-hidden shadow-xl bg-white">
         {/* Top Header Bar */}
         <div className="flex items-center border-b border-gray-200 bg-white">
           <div className="w-64 px-6 py-4 flex-shrink-0">
@@ -160,16 +160,14 @@ const App: React.FC = () => {
             {/* Page Title Row - only show if view doesn't have its own header */}
             {showPageTitle && (
               <div className="px-8 pt-6 bg-[#F9FAFB]">
-                <div className="max-w-6xl mx-auto">
-                  <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">{viewTitles[currentView]}</h1>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Crear Reporte
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <h1 className="text-2xl font-bold text-gray-900">{viewTitles[currentView]}</h1>
+                  <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Crear Reporte
+                  </button>
                 </div>
               </div>
             )}
@@ -177,7 +175,7 @@ const App: React.FC = () => {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-8 pt-6 pb-8">
               {currentView === 'dashboard' && (
-                <div className="max-w-6xl mx-auto space-y-6">
+                <div className="space-y-6">
                   {/* KPIs Row */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {MOCK_KPI_DATA.map((kpi) => (
