@@ -7,6 +7,7 @@ import { AutomationChart } from './components/Dashboard/AutomationChart';
 import { EscalationsWidget } from './components/Dashboard/EscalationsWidget';
 import { InventoryAlertsWidget } from './components/Dashboard/InventoryAlertsWidget';
 import { ResolutionsTable } from './components/Dashboard/ResolutionsTable';
+import { InboxView } from './components/Inbox/InboxView';
 import { ConversationsView } from './components/Conversations/ConversationsView';
 import { TurnosView } from './components/Turnos/TurnosView';
 import { MarketingView } from './components/Marketing/MarketingView';
@@ -73,7 +74,7 @@ const MOCK_RESOLUTIONS = [
   { id: '6', client: 'Laura Torres', type: 'pedido' as const, summary: 'Estado pedido: En preparación', time: 'Hace 18 min' },
 ];
 
-type View = 'dashboard' | 'conversations' | 'appointments' | 'marketing' | 'repairs' | 'sales' | 'posventa' | 'orders' | 'inventory' | 'quotes' | 'analytics' | 'clients' | 'settings';
+type View = 'dashboard' | 'inbox' | 'conversations' | 'appointments' | 'marketing' | 'repairs' | 'sales' | 'posventa' | 'orders' | 'inventory' | 'quotes' | 'analytics' | 'clients' | 'settings';
 
 const viewToPath: Record<View, string> = {
   dashboard: '/',
@@ -83,6 +84,7 @@ const viewToPath: Record<View, string> = {
   quotes: '/quotes',
   repairs: '/repairs',
   appointments: '/appointments',
+  inbox: '/inbox',
   conversations: '/conversations',
   posventa: '/posventa',
   marketing: '/marketing',
@@ -99,6 +101,7 @@ const viewTitles: Record<View, string> = {
   quotes: 'Cotizaciones',
   repairs: 'Servicio Técnico',
   appointments: 'Turnos',
+  inbox: 'Inbox',
   conversations: 'Conversaciones',
   posventa: 'Posventa',
   marketing: 'Marketing',
@@ -131,7 +134,7 @@ const App: React.FC = () => {
   }, []);
 
   // Check if current view has its own title header (to avoid duplicate)
-  const viewsWithOwnHeader = ['inventory', 'sales', 'orders', 'quotes', 'repairs', 'appointments', 'conversations', 'posventa', 'marketing', 'analytics', 'clients', 'settings'];
+  const viewsWithOwnHeader = ['inventory', 'sales', 'orders', 'quotes', 'repairs', 'appointments', 'inbox', 'conversations', 'posventa', 'marketing', 'analytics', 'clients', 'settings'];
   const showPageTitle = !viewsWithOwnHeader.includes(currentView);
 
   return (
@@ -206,6 +209,7 @@ const App: React.FC = () => {
               {currentView === 'orders' && <PedidosView />}
               {currentView === 'inventory' && <InventarioView />}
               {currentView === 'quotes' && <CotizacionesView />}
+              {currentView === 'inbox' && <InboxView />}
               {currentView === 'conversations' && <ConversationsView />}
               {currentView === 'appointments' && <TurnosView />}
               {currentView === 'marketing' && <MarketingView />}
