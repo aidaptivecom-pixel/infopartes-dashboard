@@ -139,7 +139,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#E5E7EB] p-4 flex justify-center">
-      <div className="flex flex-col h-[calc(100vh-32px)] w-full max-w-[1600px] rounded-3xl overflow-hidden shadow-xl bg-white">
+      <div className="flex flex-col h-[calc(100vh-32px)] w-full max-w-[1800px] rounded-3xl overflow-hidden shadow-xl bg-white">
         {/* Top Header Bar */}
         <div className="flex items-center border-b border-gray-200 bg-white">
           <div className="w-64 px-6 py-4 flex-shrink-0">
