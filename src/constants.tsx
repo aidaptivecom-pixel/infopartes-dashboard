@@ -1,9 +1,9 @@
-import { LayoutDashboard, MessageSquare, Calendar, Wrench, Users, Settings, HelpCircle, BarChart3, Megaphone, ShoppingCart, ClipboardList, Boxes, FileText, Truck } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Calendar, Wrench, Users, Settings, HelpCircle, BarChart3, Megaphone, ShoppingCart, ClipboardList, Boxes, FileText, Truck, Inbox } from 'lucide-react';
 
 export const DESIGN_TOKENS = {
   colors: {
-    primary: '#722F37',
-    primaryLight: '#8B3A44',
+    primary: '#0066CC',
+    primaryLight: '#3385D6',
     background: '#F9FAFB',
     card: '#FFFFFF',
     textPrimary: '#111827',
@@ -38,6 +38,7 @@ export const NAVIGATION_ITEMS = [
     { label: 'Turnos', icon: <Calendar size={18} />, path: '/appointments' },
   ]},
   { group: 'ATENCIÓN', items: [
+    { label: 'Inbox', icon: <Inbox size={18} />, path: '/inbox' },
     { label: 'Conversaciones', icon: <MessageSquare size={18} />, path: '/conversations' },
     { label: 'Posventa', icon: <Truck size={18} />, path: '/posventa' },
   ]},
