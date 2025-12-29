@@ -26,7 +26,6 @@ import {
   ChevronDown,
   ImageIcon,
   Smartphone,
-  Monitor,
   Globe,
   Square,
   RectangleVertical,
@@ -38,7 +37,7 @@ import {
 
 type ContentStatus = 'pending' | 'approved' | 'published' | 'rejected';
 type Platform = 'instagram' | 'facebook' | 'tiktok' | 'whatsapp' | 'web';
-type ContentType = 'feed' | 'story' | 'reel' | 'carousel';
+type ContentType = 'feed' | 'story' | 'reel' | 'carousel' | 'banner';
 type ContentFormat = 'feed' | 'story' | 'banner';
 type GenerationStatus = 'idle' | 'uploading' | 'generating' | 'complete';
 
@@ -262,11 +261,12 @@ const statusConfig = {
   rejected: { label: 'Descartado', color: 'bg-gray-50 text-gray-500 border-gray-200', dot: 'bg-gray-400' },
 };
 
-const typeLabels = {
+const typeLabels: Record<ContentType, string> = {
   feed: 'Feed',
   story: 'Story',
   reel: 'Reel',
   carousel: 'Carrusel',
+  banner: 'Banner',
 };
 
 const SAMPLE_CAPTIONS: Record<string, string[]> = {
@@ -334,10 +334,6 @@ export const MarketingView: React.FC = () => {
   const pendingContent = content.filter(c => c.status === 'pending');
   const approvedContent = content.filter(c => c.status === 'approved');
   const publishedContent = content.filter(c => c.status === 'published');
-
-  // Get current style for preview (hovered or selected)
-  const previewStyleId = hoveredStyle || selectedStyle;
-  const previewStyle = STYLE_OPTIONS.find(s => s.id === previewStyleId);
 
   const handleApprove = (id: string) => {
     setContent(prev => prev.map(c => c.id === id ? { ...c, status: 'approved' as ContentStatus } : c));
@@ -503,7 +499,7 @@ export const MarketingView: React.FC = () => {
         price: 100000,
         image: '📦'
       },
-      type: selectedFormat,
+      type: selectedFormat as ContentType,
       platforms: selectedPlatforms,
       status: 'approved',
       caption: generatedCaption,
