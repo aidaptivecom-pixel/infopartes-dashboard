@@ -24,12 +24,22 @@ import {
   Plus,
   Save,
   ChevronDown,
-  ImageIcon
+  ImageIcon,
+  Smartphone,
+  Monitor,
+  Globe,
+  Square,
+  RectangleVertical,
+  RectangleHorizontal,
+  Hash,
+  Copy,
+  CheckCircle2
 } from 'lucide-react';
 
 type ContentStatus = 'pending' | 'approved' | 'published' | 'rejected';
-type Platform = 'instagram' | 'facebook' | 'tiktok';
+type Platform = 'instagram' | 'facebook' | 'tiktok' | 'whatsapp' | 'web';
 type ContentType = 'feed' | 'story' | 'reel' | 'carousel';
+type ContentFormat = 'feed' | 'story' | 'banner';
 type GenerationStatus = 'idle' | 'uploading' | 'generating' | 'complete';
 
 interface StyleOption {
@@ -38,6 +48,28 @@ interface StyleOption {
   description: string;
   gradient: string;
   bgClass: string;
+}
+
+interface PlatformOption {
+  id: Platform;
+  name: string;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+}
+
+interface FormatOption {
+  id: ContentFormat;
+  name: string;
+  ratio: string;
+  icon: React.ReactNode;
+  dimensions: string;
+}
+
+interface GeneratedVariant {
+  id: number;
+  gradient: string;
+  caption: string;
 }
 
 interface ContentPiece {
@@ -66,6 +98,20 @@ interface ContentPiece {
     shares: number;
   };
 }
+
+const PLATFORM_OPTIONS: PlatformOption[] = [
+  { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: 'text-pink-600', bgColor: 'bg-pink-50 border-pink-200 hover:bg-pink-100' },
+  { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: 'text-blue-600', bgColor: 'bg-blue-50 border-blue-200 hover:bg-blue-100' },
+  { id: 'tiktok', name: 'TikTok', icon: <Play size={18} />, color: 'text-gray-900', bgColor: 'bg-gray-100 border-gray-300 hover:bg-gray-200' },
+  { id: 'whatsapp', name: 'WA Story', icon: <Smartphone size={18} />, color: 'text-green-600', bgColor: 'bg-green-50 border-green-200 hover:bg-green-100' },
+  { id: 'web', name: 'Web', icon: <Globe size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-50 border-purple-200 hover:bg-purple-100' },
+];
+
+const FORMAT_OPTIONS: FormatOption[] = [
+  { id: 'feed', name: 'Feed', ratio: '1:1', icon: <Square size={16} />, dimensions: '1080×1080' },
+  { id: 'story', name: 'Story', ratio: '9:16', icon: <RectangleVertical size={16} />, dimensions: '1080×1920' },
+  { id: 'banner', name: 'Banner', ratio: '16:9', icon: <RectangleHorizontal size={16} />, dimensions: '1920×1080' },
+];
 
 const STYLE_OPTIONS: StyleOption[] = [
   { 
@@ -205,6 +251,8 @@ const platformIcons = {
   instagram: <Instagram size={14} className="text-pink-500" />,
   facebook: <Facebook size={14} className="text-blue-600" />,
   tiktok: <Play size={14} className="text-gray-900" />,
+  whatsapp: <Smartphone size={14} className="text-green-600" />,
+  web: <Globe size={14} className="text-purple-600" />,
 };
 
 const statusConfig = {
@@ -229,8 +277,8 @@ const SAMPLE_CAPTIONS: Record<string, string[]> = {
   ],
   vibrant: [
     '¡OFERTA ESPECIAL! Solo por tiempo limitado.',
-    '🔥 Los mejores precios del año están acá.',
-    '⚡ No te lo pierdas. Stock limitado.',
+    'Los mejores precios del año están acá.',
+    'No te lo pierdas. Stock limitado.',
   ],
   neon: [
     'Llevá tu setup al siguiente nivel.',
@@ -249,6 +297,16 @@ const SAMPLE_CAPTIONS: Record<string, string[]> = {
   ],
 };
 
+const SAMPLE_HASHTAGS = [
+  '#infopartes', '#pcgaming', '#hardware', '#tecnologia', '#argentina'
+];
+
+const VARIANT_GRADIENTS = [
+  'from-purple-600 to-cyan-400',
+  'from-orange-500 to-pink-500',
+  'from-blue-600 to-teal-400',
+];
+
 export const MarketingView: React.FC = () => {
   const [content, setContent] = useState<ContentPiece[]>(MOCK_CONTENT);
   const [activeTab, setActiveTab] = useState<'generate' | 'pending' | 'calendar' | 'published'>('generate');
@@ -259,11 +317,19 @@ export const MarketingView: React.FC = () => {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
   const [generatedCaption, setGeneratedCaption] = useState<string>('');
+  const [generatedHashtags, setGeneratedHashtags] = useState<string[]>([]);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editedCaption, setEditedCaption] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // New state for platform, format, and variants
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(['instagram']);
+  const [selectedFormat, setSelectedFormat] = useState<ContentFormat>('feed');
+  const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
+  const [copiedHashtags, setCopiedHashtags] = useState(false);
 
   const pendingContent = content.filter(c => c.status === 'pending');
   const approvedContent = content.filter(c => c.status === 'approved');
@@ -316,10 +382,23 @@ export const MarketingView: React.FC = () => {
         setGenerationStatus('idle');
         setSelectedStyle(null);
         setGeneratedCaption('');
+        setGeneratedHashtags([]);
+        setGeneratedVariants([]);
+        setSelectedVariant(null);
         setIsEditingCaption(false);
       }, 400);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handlePlatformToggle = (platformId: Platform) => {
+    setSelectedPlatforms(prev => {
+      if (prev.includes(platformId)) {
+        if (prev.length === 1) return prev; // Keep at least one selected
+        return prev.filter(p => p !== platformId);
+      }
+      return [...prev, platformId];
+    });
   };
 
   const handleStyleSelect = (styleId: string) => {
@@ -328,28 +407,59 @@ export const MarketingView: React.FC = () => {
     setSelectedStyle(styleId);
     setGenerationStatus('generating');
     setIsEditingCaption(false);
+    setSelectedVariant(null);
     
-    // Simulate AI generation
+    // Simulate AI generation of 3 variants
     setTimeout(() => {
       const captions = SAMPLE_CAPTIONS[styleId] || SAMPLE_CAPTIONS['minimal'];
-      const randomCaption = captions[Math.floor(Math.random() * captions.length)];
-      setGeneratedCaption(randomCaption);
-      setEditedCaption(randomCaption);
+      
+      // Generate 3 variants with different gradients and captions
+      const variants: GeneratedVariant[] = [
+        { id: 1, gradient: VARIANT_GRADIENTS[0], caption: captions[0] },
+        { id: 2, gradient: VARIANT_GRADIENTS[1], caption: captions[1] },
+        { id: 3, gradient: VARIANT_GRADIENTS[2], caption: captions[2] },
+      ];
+      
+      setGeneratedVariants(variants);
+      setGeneratedHashtags(SAMPLE_HASHTAGS);
+      setSelectedVariant(1); // Auto-select first variant
+      setGeneratedCaption(variants[0].caption);
+      setEditedCaption(variants[0].caption);
       setGenerationStatus('complete');
-    }, 1200);
+    }, 1500);
+  };
+
+  const handleVariantSelect = (variantId: number) => {
+    setSelectedVariant(variantId);
+    const variant = generatedVariants.find(v => v.id === variantId);
+    if (variant) {
+      setGeneratedCaption(variant.caption);
+      setEditedCaption(variant.caption);
+    }
   };
 
   const handleRegenerate = () => {
     if (!selectedStyle || isRegenerating) return;
     setIsRegenerating(true);
+    setSelectedVariant(null);
     
     setTimeout(() => {
       const captions = SAMPLE_CAPTIONS[selectedStyle] || SAMPLE_CAPTIONS['minimal'];
-      const randomCaption = captions[Math.floor(Math.random() * captions.length)];
-      setGeneratedCaption(randomCaption);
-      setEditedCaption(randomCaption);
+      const shuffledCaptions = [...captions].sort(() => Math.random() - 0.5);
+      const shuffledGradients = [...VARIANT_GRADIENTS].sort(() => Math.random() - 0.5);
+      
+      const variants: GeneratedVariant[] = [
+        { id: 1, gradient: shuffledGradients[0], caption: shuffledCaptions[0] },
+        { id: 2, gradient: shuffledGradients[1], caption: shuffledCaptions[1] },
+        { id: 3, gradient: shuffledGradients[2], caption: shuffledCaptions[2] },
+      ];
+      
+      setGeneratedVariants(variants);
+      setSelectedVariant(1);
+      setGeneratedCaption(variants[0].caption);
+      setEditedCaption(variants[0].caption);
       setIsRegenerating(false);
-    }, 1000);
+    }, 1200);
   };
 
   const handleSaveCaption = () => {
@@ -357,25 +467,34 @@ export const MarketingView: React.FC = () => {
     setIsEditingCaption(false);
   };
 
+  const handleCopyHashtags = () => {
+    navigator.clipboard.writeText(generatedHashtags.join(' '));
+    setCopiedHashtags(true);
+    setTimeout(() => setCopiedHashtags(false), 2000);
+  };
+
   const handleClearAll = () => {
     setUploadedImage(null);
     setPromptInstructions('');
     setShowInstructions(false);
     setGeneratedCaption('');
+    setGeneratedHashtags([]);
     setGenerationStatus('idle');
     setSelectedStyle(null);
     setHoveredStyle(null);
     setIsEditingCaption(false);
     setIsRegenerating(false);
+    setGeneratedVariants([]);
+    setSelectedVariant(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleApproveGenerated = () => {
-    if (!selectedStyle || !generatedCaption) return;
+    if (!selectedStyle || !generatedCaption || !selectedVariant) return;
     
-    const style = STYLE_OPTIONS.find(s => s.id === selectedStyle);
+    const variant = generatedVariants.find(v => v.id === selectedVariant);
     const newContent: ContentPiece = {
       id: String(Date.now()),
       product: {
@@ -384,21 +503,41 @@ export const MarketingView: React.FC = () => {
         price: 100000,
         image: '📦'
       },
-      type: 'feed',
-      platforms: ['instagram', 'facebook'],
+      type: selectedFormat,
+      platforms: selectedPlatforms,
       status: 'approved',
       caption: generatedCaption,
-      hashtags: [],
+      hashtags: generatedHashtags,
       cta: 'Consultar por WhatsApp',
       scheduledDate: new Date().toISOString().split('T')[0],
       scheduledTime: '10:00',
       selectedStyle: selectedStyle,
-      gradient: style?.gradient || 'from-gray-100 to-white'
+      gradient: variant?.gradient || 'from-gray-100 to-white'
     };
     
     setContent(prev => [newContent, ...prev]);
     handleClearAll();
     setActiveTab('pending');
+  };
+
+  // Get aspect ratio class based on format
+  const getAspectClass = (format: ContentFormat) => {
+    switch (format) {
+      case 'feed': return 'aspect-square';
+      case 'story': return 'aspect-[9/16]';
+      case 'banner': return 'aspect-video';
+      default: return 'aspect-square';
+    }
+  };
+
+  // Get mockup dimensions based on format
+  const getMockupStyle = (format: ContentFormat) => {
+    switch (format) {
+      case 'feed': return { width: '280px' };
+      case 'story': return { width: '200px' };
+      case 'banner': return { width: '320px' };
+      default: return { width: '280px' };
+    }
   };
 
   return (
@@ -461,8 +600,60 @@ export const MarketingView: React.FC = () => {
       {/* Generate Tab - Premium redesign */}
       {activeTab === 'generate' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Upload + Styles */}
+          {/* Left: Upload + Options */}
           <div className="space-y-5">
+            {/* Platform Selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORM_OPTIONS.map((platform) => {
+                  const isSelected = selectedPlatforms.includes(platform.id);
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handlePlatformToggle(platform.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected 
+                          ? `${platform.bgColor} border-2 ${platform.color}` 
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
+                      {platform.name}
+                      {isSelected && <Check size={14} className={platform.color} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Format Selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {FORMAT_OPTIONS.map((format) => {
+                  const isSelected = selectedFormat === format.id;
+                  return (
+                    <button
+                      key={format.id}
+                      onClick={() => setSelectedFormat(format.id)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                        isSelected 
+                          ? 'border-gray-900 bg-gray-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
+                      <div className="text-center">
+                        <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
+                        <p className="text-xs text-gray-400">{format.ratio}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Upload Area */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               {!uploadedImage ? (
@@ -596,69 +787,111 @@ export const MarketingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Preview */}
+          {/* Right: Preview with 3 Variants */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-medium text-gray-900 flex items-center gap-2">
                 <Eye size={16} />
                 Vista previa
               </h3>
-              {selectedStyle && generationStatus === 'complete' && (
-                <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                  {STYLE_OPTIONS.find(s => s.id === selectedStyle)?.name}
-                </span>
+              {selectedPlatforms.length > 0 && (
+                <div className="flex items-center gap-1">
+                  {selectedPlatforms.map((p) => (
+                    <span key={p} className="p-1">{platformIcons[p]}</span>
+                  ))}
+                  <span className="text-xs text-gray-400 ml-2">
+                    {FORMAT_OPTIONS.find(f => f.id === selectedFormat)?.dimensions}
+                  </span>
+                </div>
               )}
             </div>
             
-            {uploadedImage && previewStyle ? (
+            {uploadedImage && generatedVariants.length > 0 ? (
               <div className="space-y-5">
-                {/* Phone mockup */}
-                <div className="bg-gray-900 rounded-[2rem] p-2.5 max-w-[300px] mx-auto shadow-2xl">
-                  <div className="bg-white rounded-[1.5rem] overflow-hidden">
-                    {/* IG Header */}
-                    <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
-                        <span className="text-xs font-semibold text-gray-900">tu_negocio</span>
-                      </div>
-                      <MoreVertical size={16} className="text-gray-400" />
-                    </div>
-                    
-                    {/* Image with style preview */}
-                    <div className={`aspect-square bg-gradient-to-br ${previewStyle.gradient} flex items-center justify-center relative transition-all duration-300`}>
-                      {generationStatus === 'generating' ? (
-                        <Loader2 size={36} className="text-white/80 animate-spin" />
-                      ) : (
-                        <img 
-                          src={uploadedImage} 
-                          alt="Preview" 
-                          className="absolute inset-4 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
-                        />
-                      )}
-                    </div>
-                    
-                    {/* Actions */}
-                    <div className="p-3">
-                      <div className="flex items-center gap-4 mb-2">
-                        <Heart size={22} className="text-gray-800" />
-                        <MessageCircle size={22} className="text-gray-800" />
-                        <Share2 size={22} className="text-gray-800" />
-                      </div>
-                      <p className="text-xs text-gray-900">
-                        <span className="font-semibold">tu_negocio</span>{' '}
-                        <span className="text-gray-600">
-                          {generatedCaption ? generatedCaption.substring(0, 50) + '...' : 'Tu caption aparecerá acá...'}
-                        </span>
-                      </p>
-                    </div>
+                {/* 3 Variants Grid */}
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-3">Elegí una variante</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {generatedVariants.map((variant) => {
+                      const isSelected = selectedVariant === variant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => handleVariantSelect(variant.id)}
+                          className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                            isSelected 
+                              ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
+                              : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-2`}>
+                            <img 
+                              src={uploadedImage} 
+                              alt={`Variant ${variant.id}`} 
+                              className="max-w-[80%] max-h-[80%] object-contain rounded shadow-lg"
+                            />
+                          </div>
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
+                              <Check size={14} className="text-white" />
+                            </div>
+                          )}
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            {variant.id}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+
+                {/* Selected Variant Preview - Phone mockup */}
+                {selectedVariant && (
+                  <div className="flex justify-center">
+                    <div className="bg-gray-900 rounded-[2rem] p-2.5 shadow-2xl" style={getMockupStyle(selectedFormat)}>
+                      <div className="bg-white rounded-[1.5rem] overflow-hidden">
+                        {/* IG Header */}
+                        <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
+                            <span className="text-xs font-semibold text-gray-900">infopartes</span>
+                          </div>
+                          <MoreVertical size={14} className="text-gray-400" />
+                        </div>
+                        
+                        {/* Image with selected variant */}
+                        <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
+                          <img 
+                            src={uploadedImage} 
+                            alt="Preview" 
+                            className="absolute inset-4 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
+                          />
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="p-3">
+                          <div className="flex items-center gap-4 mb-2">
+                            <Heart size={20} className="text-gray-800" />
+                            <MessageCircle size={20} className="text-gray-800" />
+                            <Share2 size={20} className="text-gray-800" />
+                          </div>
+                          <p className="text-xs text-gray-900">
+                            <span className="font-semibold">infopartes</span>{' '}
+                            <span className="text-gray-600">
+                              {generatedCaption ? generatedCaption.substring(0, 40) + '...' : ''}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Caption Section */}
                 {generatedCaption && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500">Caption</span>
+                      <span className="text-xs font-medium text-gray-500">Caption sugerido</span>
                       {!isEditingCaption && (
                         <button 
                           onClick={() => setIsEditingCaption(true)}
@@ -702,13 +935,49 @@ export const MarketingView: React.FC = () => {
                     )}
                   </div>
                 )}
+
+                {/* Hashtags Section */}
+                {generatedHashtags.length > 0 && (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                        <Hash size={12} />
+                        Hashtags
+                      </span>
+                      <button 
+                        onClick={handleCopyHashtags}
+                        className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1"
+                      >
+                        {copiedHashtags ? (
+                          <>
+                            <CheckCircle2 size={12} className="text-green-500" />
+                            <span className="text-green-600">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} />
+                            Copiar
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {generatedHashtags.map((tag, i) => (
+                        <span key={i} className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Actions */}
                 {generationStatus === 'complete' && (
                   <div className="space-y-2">
                     <button 
                       onClick={handleApproveGenerated}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                      disabled={!selectedVariant}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Check size={18} />
                       Aprobar y programar
@@ -725,7 +994,7 @@ export const MarketingView: React.FC = () => {
                         ) : (
                           <RefreshCw size={14} />
                         )}
-                        Regenerar
+                        Regenerar 3 variantes
                       </button>
                       <button 
                         onClick={handleClearAll}
@@ -738,6 +1007,12 @@ export const MarketingView: React.FC = () => {
                   </div>
                 )}
               </div>
+            ) : uploadedImage && generationStatus === 'generating' ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <Loader2 size={40} className="text-gray-400 animate-spin mb-4" />
+                <p className="text-gray-500 font-medium">Generando 3 variantes...</p>
+                <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
@@ -747,7 +1022,7 @@ export const MarketingView: React.FC = () => {
                   {!uploadedImage ? 'Subí una imagen' : 'Elegí un estilo'}
                 </p>
                 <p className="text-sm text-gray-400 mt-1">
-                  {!uploadedImage ? 'para empezar a crear' : 'para ver la preview'}
+                  {!uploadedImage ? 'para empezar a crear' : 'para generar 3 variantes'}
                 </p>
               </div>
             )}
