@@ -572,135 +572,141 @@ export const MarketingView: React.FC = () => {
       </div>
 
       {activeTab === 'generate' && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* 2x2 Grid - Same Height Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Top Left: Red Social */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
-              <div className="flex flex-wrap gap-2">
-                {PLATFORM_OPTIONS.map((platform) => {
-                  const isSelected = selectedPlatforms.includes(platform.id);
-                  return (
-                    <button
-                      key={platform.id}
-                      onClick={() => handlePlatformToggle(platform.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        isSelected 
-                          ? `${platform.bgColor} border-2 ${platform.color}` 
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
-                      {platform.name}
-                      {isSelected && <Check size={14} className={platform.color} />}
-                    </button>
-                  );
-                })}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {PLATFORM_OPTIONS.map((platform) => {
+                    const isSelected = selectedPlatforms.includes(platform.id);
+                    return (
+                      <button
+                        key={platform.id}
+                        onClick={() => handlePlatformToggle(platform.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          isSelected 
+                            ? `${platform.bgColor} border-2 ${platform.color}` 
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
+                        {platform.name}
+                        {isSelected && <Check size={14} className={platform.color} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Top Right: Formato */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {FORMAT_OPTIONS.map((format) => {
-                  const isSelected = selectedFormat === format.id;
-                  return (
-                    <button
-                      key={format.id}
-                      onClick={() => setSelectedFormat(format.id)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                        isSelected 
-                          ? 'border-gray-900 bg-gray-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
-                      <div className="text-center">
-                        <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
-                        <p className="text-xs text-gray-400">{format.ratio}</p>
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="flex-1 flex items-center">
+                <div className="grid grid-cols-3 gap-3 w-full">
+                  {FORMAT_OPTIONS.map((format) => {
+                    const isSelected = selectedFormat === format.id;
+                    return (
+                      <button
+                        key={format.id}
+                        onClick={() => setSelectedFormat(format.id)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                          isSelected 
+                            ? 'border-gray-900 bg-gray-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
+                        <div className="text-center">
+                          <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
+                          <p className="text-xs text-gray-400">{format.ratio}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Bottom Left: Elegí un estilo */}
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
               <h3 className="text-sm font-medium text-gray-900 mb-3">Elegí un estilo</h3>
-              <div className="grid grid-cols-5 gap-3">
-                {STYLE_OPTIONS.map((style) => {
-                  const isSelected = selectedStyle === style.id;
-                  const isHovered = hoveredStyle === style.id;
-                  
-                  return (
-                    <button
-                      key={style.id}
-                      onClick={() => handleStyleSelect(style.id)}
-                      onMouseEnter={() => setHoveredStyle(style.id)}
-                      onMouseLeave={() => setHoveredStyle(null)}
-                      disabled={!uploadedImage || generationStatus === 'generating'}
-                      className="group"
-                    >
-                      <div className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
-                        isSelected 
-                          ? 'ring-2 ring-gray-900 ring-offset-2 scale-105' 
-                          : isHovered
-                          ? 'ring-2 ring-gray-300 ring-offset-2 scale-105'
-                          : 'hover:scale-105'
-                      }`}>
-                        <img 
-                          src={style.image} 
-                          alt={style.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            target.parentElement!.classList.add(style.bgClass);
-                          }}
-                        />
-                        {isSelected && generationStatus === 'generating' && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                            <Loader2 size={16} className="text-white animate-spin" />
-                          </div>
-                        )}
-                        {isSelected && generationStatus === 'complete' && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                            <Check size={10} className="text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className={`text-[11px] mt-1.5 text-center transition-colors truncate ${
-                        isSelected ? 'text-gray-900 font-medium' : 'text-gray-500'
-                      }`}>
-                        {style.name}
-                      </p>
-                    </button>
-                  );
-                })}
+              <div className="flex-1 flex items-center">
+                <div className="grid grid-cols-5 gap-2 w-full">
+                  {STYLE_OPTIONS.map((style) => {
+                    const isSelected = selectedStyle === style.id;
+                    const isHovered = hoveredStyle === style.id;
+                    
+                    return (
+                      <button
+                        key={style.id}
+                        onClick={() => handleStyleSelect(style.id)}
+                        onMouseEnter={() => setHoveredStyle(style.id)}
+                        onMouseLeave={() => setHoveredStyle(null)}
+                        disabled={!uploadedImage || generationStatus === 'generating'}
+                        className="group flex flex-col items-center"
+                      >
+                        <div className={`relative w-14 h-14 rounded-xl overflow-hidden transition-all duration-200 ${
+                          isSelected 
+                            ? 'ring-2 ring-gray-900 ring-offset-2 scale-110' 
+                            : isHovered
+                            ? 'ring-2 ring-gray-300 ring-offset-1 scale-105'
+                            : 'hover:scale-105'
+                        }`}>
+                          <img 
+                            src={style.image} 
+                            alt={style.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.classList.add(style.bgClass);
+                            }}
+                          />
+                          {isSelected && generationStatus === 'generating' && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <Loader2 size={14} className="text-white animate-spin" />
+                            </div>
+                          )}
+                          {isSelected && generationStatus === 'complete' && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 rounded-full flex items-center justify-center">
+                              <Check size={10} className="text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <p className={`text-[10px] mt-1 text-center transition-colors ${
+                          isSelected ? 'text-gray-900 font-semibold' : 'text-gray-500'
+                        }`}>
+                          {style.name}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Bottom Right: Instrucciones */}
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
-                <MessageSquare size={16} />
+              <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
+                <MessageSquare size={14} />
                 Instrucciones personalizadas
               </h3>
               <textarea
                 value={promptInstructions}
                 onChange={(e) => setPromptInstructions(e.target.value)}
-                placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño, destacar que es último stock..."
-                rows={3}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
+                placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño..."
+                rows={2}
+                className="flex-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
               />
-              <p className="text-xs text-gray-400 mt-2">Opcional: se agregan al prompt de IA</p>
+              <p className="text-[10px] text-gray-400 mt-1">Opcional: se agregan al prompt de IA</p>
             </div>
           </div>
 
