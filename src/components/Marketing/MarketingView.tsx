@@ -44,6 +44,7 @@ interface StyleOption {
   description: string;
   gradient: string;
   bgClass: string;
+  image: string;
 }
 
 interface PlatformOption {
@@ -112,38 +113,43 @@ const FORMAT_OPTIONS: FormatOption[] = [
 const STYLE_OPTIONS: StyleOption[] = [
   { 
     id: 'render', 
-    name: 'Render producto', 
-    description: 'Fondo limpio y profesional',
+    name: 'Render', 
+    description: 'Fondo limpio',
     gradient: 'from-gray-50 to-white',
-    bgClass: 'bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200'
+    bgClass: 'bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200',
+    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=100&h=100&fit=crop&q=80'
   },
   { 
     id: 'promo', 
-    name: 'Promocional', 
-    description: 'Colores llamativos para ofertas',
+    name: 'Promo', 
+    description: 'Ofertas',
     gradient: 'from-orange-500 to-pink-500',
-    bgClass: 'bg-gradient-to-br from-orange-500 to-pink-500'
+    bgClass: 'bg-gradient-to-br from-orange-500 to-pink-500',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=100&h=100&fit=crop&q=80'
   },
   { 
     id: 'infopartes', 
-    name: 'Estilo InfoPartes', 
-    description: 'Identidad de marca',
+    name: 'InfoPartes', 
+    description: 'Marca',
     gradient: 'from-purple-600 to-cyan-400',
-    bgClass: 'bg-gradient-to-br from-purple-600 to-cyan-400'
+    bgClass: 'bg-gradient-to-br from-purple-600 to-cyan-400',
+    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop&q=80'
   },
   { 
     id: 'tech', 
-    name: 'Tech Premium', 
-    description: 'Tonos azules profesionales',
+    name: 'Tech', 
+    description: 'Premium',
     gradient: 'from-blue-600 to-teal-400',
-    bgClass: 'bg-gradient-to-br from-blue-600 to-teal-400'
+    bgClass: 'bg-gradient-to-br from-blue-600 to-teal-400',
+    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=100&h=100&fit=crop&q=80'
   },
   { 
     id: 'gaming', 
-    name: 'Gaming RGB', 
-    description: 'Estilo gamer con colores vivos',
+    name: 'Gaming', 
+    description: 'RGB',
     gradient: 'from-amber-500 to-rose-500',
-    bgClass: 'bg-gradient-to-br from-amber-500 to-rose-500'
+    bgClass: 'bg-gradient-to-br from-amber-500 to-rose-500',
+    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&q=80'
   },
 ];
 
@@ -567,136 +573,139 @@ export const MarketingView: React.FC = () => {
 
       {activeTab === 'generate' && (
         <div className="space-y-6">
-          {/* Top Row: 2x2 Grid for Options */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column */}
-            <div className="space-y-5">
-              {/* Style Selection */}
-              <div className={`bg-white rounded-2xl border border-gray-100 p-5 transition-opacity ${
-                uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
-              }`}>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Elegí un estilo</h3>
-                
-                <div className="flex gap-3 justify-between">
-                  {STYLE_OPTIONS.map((style) => {
-                    const isSelected = selectedStyle === style.id;
-                    const isHovered = hoveredStyle === style.id;
-                    
-                    return (
-                      <button
-                        key={style.id}
-                        onClick={() => handleStyleSelect(style.id)}
-                        onMouseEnter={() => setHoveredStyle(style.id)}
-                        onMouseLeave={() => setHoveredStyle(null)}
-                        disabled={!uploadedImage || generationStatus === 'generating'}
-                        className="flex-1 group"
-                      >
-                        <div className={`relative aspect-square rounded-xl ${style.bgClass} transition-all duration-200 ${
-                          isSelected 
-                            ? 'ring-2 ring-gray-900 ring-offset-2 scale-105' 
-                            : isHovered
-                            ? 'ring-2 ring-gray-300 ring-offset-2 scale-105'
-                            : 'hover:scale-105'
-                        }`}>
-                          {isSelected && generationStatus === 'generating' && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
-                              <Loader2 size={20} className="text-white animate-spin" />
-                            </div>
-                          )}
-                          {isSelected && generationStatus === 'complete' && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                              <Check size={12} className="text-white" />
-                            </div>
-                          )}
-                        </div>
-                        <p className={`text-xs mt-2 text-center transition-colors ${
-                          isSelected ? 'text-gray-900 font-medium' : 'text-gray-500'
-                        }`}>
-                          {style.name}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Custom Instructions Card */}
-              <div className={`bg-white rounded-2xl border border-gray-100 p-5 transition-opacity ${
-                uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
-              }`}>
-                <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  <MessageSquare size={16} />
-                  Instrucciones personalizadas
-                </h3>
-                <textarea
-                  value={promptInstructions}
-                  onChange={(e) => setPromptInstructions(e.target.value)}
-                  placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño, destacar que es último stock..."
-                  rows={3}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
-                />
-                <p className="text-xs text-gray-400 mt-2">Opcional: se agregan al prompt de generación de IA</p>
+          {/* 2x2 Grid - Same Height Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Top Left: Red Social */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORM_OPTIONS.map((platform) => {
+                  const isSelected = selectedPlatforms.includes(platform.id);
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handlePlatformToggle(platform.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected 
+                          ? `${platform.bgColor} border-2 ${platform.color}` 
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
+                      {platform.name}
+                      {isSelected && <Check size={14} className={platform.color} />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-5">
-              {/* Platform Selection */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
-                <div className="flex flex-wrap gap-2">
-                  {PLATFORM_OPTIONS.map((platform) => {
-                    const isSelected = selectedPlatforms.includes(platform.id);
-                    return (
-                      <button
-                        key={platform.id}
-                        onClick={() => handlePlatformToggle(platform.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          isSelected 
-                            ? `${platform.bgColor} border-2 ${platform.color}` 
-                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                        }`}
-                      >
-                        <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
-                        {platform.name}
-                        {isSelected && <Check size={14} className={platform.color} />}
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Top Right: Formato */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {FORMAT_OPTIONS.map((format) => {
+                  const isSelected = selectedFormat === format.id;
+                  return (
+                    <button
+                      key={format.id}
+                      onClick={() => setSelectedFormat(format.id)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                        isSelected 
+                          ? 'border-gray-900 bg-gray-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
+                      <div className="text-center">
+                        <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
+                        <p className="text-xs text-gray-400">{format.ratio}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* Format Selection */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {FORMAT_OPTIONS.map((format) => {
-                    const isSelected = selectedFormat === format.id;
-                    return (
-                      <button
-                        key={format.id}
-                        onClick={() => setSelectedFormat(format.id)}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                          isSelected 
-                            ? 'border-gray-900 bg-gray-50' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
-                        <div className="text-center">
-                          <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
-                          <p className="text-xs text-gray-400">{format.ratio}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Bottom Left: Elegí un estilo */}
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
+              uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
+            }`}>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Elegí un estilo</h3>
+              <div className="grid grid-cols-5 gap-3">
+                {STYLE_OPTIONS.map((style) => {
+                  const isSelected = selectedStyle === style.id;
+                  const isHovered = hoveredStyle === style.id;
+                  
+                  return (
+                    <button
+                      key={style.id}
+                      onClick={() => handleStyleSelect(style.id)}
+                      onMouseEnter={() => setHoveredStyle(style.id)}
+                      onMouseLeave={() => setHoveredStyle(null)}
+                      disabled={!uploadedImage || generationStatus === 'generating'}
+                      className="group"
+                    >
+                      <div className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
+                        isSelected 
+                          ? 'ring-2 ring-gray-900 ring-offset-2 scale-105' 
+                          : isHovered
+                          ? 'ring-2 ring-gray-300 ring-offset-2 scale-105'
+                          : 'hover:scale-105'
+                      }`}>
+                        <img 
+                          src={style.image} 
+                          alt={style.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.classList.add(style.bgClass);
+                          }}
+                        />
+                        {isSelected && generationStatus === 'generating' && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <Loader2 size={16} className="text-white animate-spin" />
+                          </div>
+                        )}
+                        {isSelected && generationStatus === 'complete' && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                            <Check size={10} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className={`text-[11px] mt-1.5 text-center transition-colors truncate ${
+                        isSelected ? 'text-gray-900 font-medium' : 'text-gray-500'
+                      }`}>
+                        {style.name}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Bottom Right: Instrucciones */}
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
+              uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
+            }`}>
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <MessageSquare size={16} />
+                Instrucciones personalizadas
+              </h3>
+              <textarea
+                value={promptInstructions}
+                onChange={(e) => setPromptInstructions(e.target.value)}
+                placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño, destacar que es último stock..."
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
+              />
+              <p className="text-xs text-gray-400 mt-2">Opcional: se agregan al prompt de IA</p>
             </div>
           </div>
 
           {/* Bottom Row: Upload + Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Upload Area */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               {!uploadedImage ? (
@@ -705,7 +714,7 @@ export const MarketingView: React.FC = () => {
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`relative p-8 text-center cursor-pointer transition-all h-full min-h-[300px] flex flex-col items-center justify-center ${
+                  className={`relative p-8 text-center cursor-pointer transition-all h-full min-h-[320px] flex flex-col items-center justify-center ${
                     isDragging ? 'bg-gray-50' : 'hover:bg-gray-50'
                   }`}
                 >
@@ -919,7 +928,7 @@ export const MarketingView: React.FC = () => {
                           ) : (
                             <RefreshCw size={14} />
                           )}
-                          Regenerar 3 variantes
+                          Regenerar
                         </button>
                         <button 
                           onClick={handleClearAll}
