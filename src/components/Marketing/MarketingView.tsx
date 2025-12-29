@@ -29,7 +29,8 @@ import {
   Square,
   RectangleVertical,
   RectangleHorizontal,
-  MessageSquare
+  MessageSquare,
+  Image
 } from 'lucide-react';
 
 type ContentStatus = 'pending' | 'approved' | 'published' | 'rejected';
@@ -510,10 +511,10 @@ export const MarketingView: React.FC = () => {
 
   const getMockupStyle = (format: ContentFormat) => {
     switch (format) {
-      case 'feed': return { width: '280px' };
-      case 'story': return { width: '200px' };
-      case 'banner': return { width: '320px' };
-      default: return { width: '280px' };
+      case 'feed': return { width: '260px' };
+      case 'story': return { width: '180px' };
+      case 'banner': return { width: '300px' };
+      default: return { width: '260px' };
     }
   };
 
@@ -710,68 +711,139 @@ export const MarketingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Row: Upload + Preview */}
+          {/* Bottom Row: Upload + Preview - Symmetric Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Upload Area */}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {!uploadedImage ? (
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`relative p-8 text-center cursor-pointer transition-all h-full min-h-[320px] flex flex-col items-center justify-center ${
-                    isDragging ? 'bg-gray-50' : 'hover:bg-gray-50'
-                  }`}
-                >
-                  {generationStatus === 'uploading' ? (
-                    <div className="py-8">
-                      <Loader2 size={32} className="text-gray-400 animate-spin mx-auto mb-3" />
-                      <p className="text-gray-600 font-medium">Subiendo...</p>
-                    </div>
-                  ) : (
-                    <div className="py-8">
-                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors ${
-                        isDragging ? 'bg-gray-200' : 'bg-gray-100'
-                      }`}>
-                        <ImageIcon size={28} className="text-gray-400" />
+            {/* Left Column: Reference Image + Variants */}
+            <div className="space-y-5">
+              {/* Reference Image Card */}
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                {!uploadedImage ? (
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`relative p-8 text-center cursor-pointer transition-all h-[200px] flex flex-col items-center justify-center ${
+                      isDragging ? 'bg-gray-50' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {generationStatus === 'uploading' ? (
+                      <div>
+                        <Loader2 size={32} className="text-gray-400 animate-spin mx-auto mb-3" />
+                        <p className="text-gray-600 font-medium">Subiendo...</p>
                       </div>
-                      <p className="text-gray-700 font-medium mb-1">
-                        Arrastrá una imagen o hacé click
-                      </p>
-                      <p className="text-sm text-gray-400">PNG, JPG hasta 10MB</p>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </div>
-              ) : (
-                <div className="p-4">
-                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
-                    <img 
-                      src={uploadedImage} 
-                      alt="Preview" 
-                      className="w-full h-full object-contain"
+                    ) : (
+                      <div>
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-colors ${
+                          isDragging ? 'bg-gray-200' : 'bg-gray-100'
+                        }`}>
+                          <ImageIcon size={24} className="text-gray-400" />
+                        </div>
+                        <p className="text-gray-700 font-medium mb-1">
+                          Arrastrá una imagen o hacé click
+                        </p>
+                        <p className="text-sm text-gray-400">PNG, JPG hasta 10MB</p>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
                     />
-                    <button
-                      onClick={handleClearAll}
-                      className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors"
+                  </div>
+                ) : (
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                        <Image size={14} />
+                        Imagen de referencia
+                      </h3>
+                      <button
+                        onClick={handleClearAll}
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 max-h-[160px]">
+                      <img 
+                        src={uploadedImage} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Variants Card - Only shows when variants are generated */}
+              {uploadedImage && generatedVariants.length > 0 && (
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-gray-900">Elegí una variante</h3>
+                    <button 
+                      onClick={handleRegenerate}
+                      disabled={isRegenerating}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
                     >
-                      <X size={16} />
+                      {isRegenerating ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <RefreshCw size={12} />
+                      )}
+                      Regenerar
                     </button>
                   </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {generatedVariants.map((variant) => {
+                      const isSelected = selectedVariant === variant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => handleVariantSelect(variant.id)}
+                          className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                            isSelected 
+                              ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
+                              : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className={`aspect-square bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-2`}>
+                            <img 
+                              src={uploadedImage} 
+                              alt={`Variant ${variant.id}`} 
+                              className="max-w-[75%] max-h-[75%] object-contain rounded shadow-lg"
+                            />
+                          </div>
+                          {isSelected && (
+                            <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                              <Check size={12} className="text-white" />
+                            </div>
+                          )}
+                          <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                            {variant.id}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Loading state for variants */}
+              {uploadedImage && generationStatus === 'generating' && (
+                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center justify-center">
+                  <Loader2 size={32} className="text-gray-400 animate-spin mb-3" />
+                  <p className="text-gray-500 font-medium">Generando variantes...</p>
+                  <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
                 </div>
               )}
             </div>
 
-            {/* Preview */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-5">
+            {/* Right Column: Preview */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900 flex items-center gap-2">
                   <Eye size={16} />
                   Vista previa
@@ -788,92 +860,56 @@ export const MarketingView: React.FC = () => {
                 )}
               </div>
               
-              {uploadedImage && generatedVariants.length > 0 ? (
-                <div className="space-y-5">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 mb-3">Elegí una variante</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {generatedVariants.map((variant) => {
-                        const isSelected = selectedVariant === variant.id;
-                        return (
-                          <button
-                            key={variant.id}
-                            onClick={() => handleVariantSelect(variant.id)}
-                            className={`relative rounded-xl overflow-hidden border-2 transition-all ${
-                              isSelected 
-                                ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
-                                : 'border-gray-200 hover:border-gray-400'
-                            }`}
-                          >
-                            <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-2`}>
-                              <img 
-                                src={uploadedImage} 
-                                alt={`Variant ${variant.id}`} 
-                                className="max-w-[80%] max-h-[80%] object-contain rounded shadow-lg"
-                              />
-                            </div>
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
-                                <Check size={14} className="text-white" />
-                              </div>
-                            )}
-                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                              {variant.id}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {selectedVariant && (
-                    <div className="flex justify-center">
-                      <div className="bg-gray-900 rounded-[2rem] p-2.5 shadow-2xl" style={getMockupStyle(selectedFormat)}>
-                        <div className="bg-white rounded-[1.5rem] overflow-hidden">
-                          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
-                              <span className="text-xs font-semibold text-gray-900">infopartes</span>
-                            </div>
-                            <MoreVertical size={14} className="text-gray-400" />
+              {uploadedImage && selectedVariant && generatedVariants.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Phone Mockup */}
+                  <div className="flex justify-center">
+                    <div className="bg-gray-900 rounded-[2rem] p-2 shadow-2xl" style={getMockupStyle(selectedFormat)}>
+                      <div className="bg-white rounded-[1.5rem] overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
+                            <span className="text-xs font-semibold text-gray-900">infopartes</span>
                           </div>
-                          
-                          <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
-                            <img 
-                              src={uploadedImage} 
-                              alt="Preview" 
-                              className="absolute inset-4 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
-                            />
+                          <MoreVertical size={12} className="text-gray-400" />
+                        </div>
+                        
+                        <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
+                          <img 
+                            src={uploadedImage} 
+                            alt="Preview" 
+                            className="absolute inset-3 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
+                          />
+                        </div>
+                        
+                        <div className="p-2.5">
+                          <div className="flex items-center gap-3 mb-1.5">
+                            <Heart size={16} className="text-gray-800" />
+                            <MessageCircle size={16} className="text-gray-800" />
+                            <Share2 size={16} className="text-gray-800" />
                           </div>
-                          
-                          <div className="p-3">
-                            <div className="flex items-center gap-4 mb-2">
-                              <Heart size={20} className="text-gray-800" />
-                              <MessageCircle size={20} className="text-gray-800" />
-                              <Share2 size={20} className="text-gray-800" />
-                            </div>
-                            <p className="text-xs text-gray-900">
-                              <span className="font-semibold">infopartes</span>{' '}
-                              <span className="text-gray-600">
-                                {generatedCaption ? generatedCaption.substring(0, 40) + '...' : ''}
-                              </span>
-                            </p>
-                          </div>
+                          <p className="text-[10px] text-gray-900">
+                            <span className="font-semibold">infopartes</span>{' '}
+                            <span className="text-gray-600">
+                              {generatedCaption ? generatedCaption.substring(0, 35) + '...' : ''}
+                            </span>
+                          </p>
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                   
+                  {/* Caption */}
                   {generatedCaption && (
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="bg-gray-50 rounded-xl p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-500">Caption sugerido</span>
+                        <span className="text-xs font-medium text-gray-500">Caption</span>
                         {!isEditingCaption && (
                           <button 
                             onClick={() => setIsEditingCaption(true)}
                             className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1"
                           >
-                            <Edit3 size={12} />
+                            <Edit3 size={10} />
                             Editar
                           </button>
                         )}
@@ -885,14 +921,14 @@ export const MarketingView: React.FC = () => {
                             value={editedCaption}
                             onChange={(e) => setEditedCaption(e.target.value)}
                             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
-                            rows={3}
+                            rows={2}
                           />
                           <div className="flex gap-2">
                             <button 
                               onClick={handleSaveCaption}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium"
+                              className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium"
                             >
-                              <Save size={12} />
+                              <Save size={10} />
                               Guardar
                             </button>
                             <button 
@@ -900,7 +936,7 @@ export const MarketingView: React.FC = () => {
                                 setIsEditingCaption(false);
                                 setEditedCaption(generatedCaption);
                               }}
-                              className="px-3 py-1.5 text-gray-600 text-xs font-medium hover:bg-gray-200 rounded-lg"
+                              className="px-2.5 py-1.5 text-gray-600 text-xs font-medium hover:bg-gray-200 rounded-lg"
                             >
                               Cancelar
                             </button>
@@ -912,57 +948,38 @@ export const MarketingView: React.FC = () => {
                     </div>
                   )}
                   
+                  {/* Action Buttons */}
                   {generationStatus === 'complete' && (
                     <div className="space-y-2">
                       <button 
                         onClick={handleApproveGenerated}
                         disabled={!selectedVariant}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Check size={18} />
+                        <Check size={16} />
                         Aprobar y programar
                       </button>
                       
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={handleRegenerate}
-                          disabled={isRegenerating}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-                        >
-                          {isRegenerating ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <RefreshCw size={14} />
-                          )}
-                          Regenerar
-                        </button>
-                        <button 
-                          onClick={handleClearAll}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                          Descartar
-                        </button>
-                      </div>
+                      <button 
+                        onClick={handleClearAll}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        Descartar
+                      </button>
                     </div>
                   )}
                 </div>
-              ) : uploadedImage && generationStatus === 'generating' ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Loader2 size={40} className="text-gray-400 animate-spin mb-4" />
-                  <p className="text-gray-500 font-medium">Generando 3 variantes...</p>
-                  <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
-                </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                    <Sparkles size={32} className="text-gray-300" />
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                    <Sparkles size={28} className="text-gray-300" />
                   </div>
                   <p className="text-gray-500 font-medium">
                     {!uploadedImage ? 'Subí una imagen' : 'Elegí un estilo'}
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    {!uploadedImage ? 'para empezar a crear' : 'para generar 3 variantes'}
+                    {!uploadedImage ? 'para empezar a crear' : 'para generar variantes'}
                   </p>
                 </div>
               )}
