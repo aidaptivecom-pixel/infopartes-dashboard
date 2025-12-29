@@ -23,16 +23,13 @@ import {
   Trash2,
   Plus,
   Save,
-  ChevronDown,
   ImageIcon,
   Smartphone,
   Globe,
   Square,
   RectangleVertical,
   RectangleHorizontal,
-  Hash,
-  Copy,
-  CheckCircle2
+  MessageSquare
 } from 'lucide-react';
 
 type ContentStatus = 'pending' | 'approved' | 'published' | 'rejected';
@@ -114,37 +111,37 @@ const FORMAT_OPTIONS: FormatOption[] = [
 
 const STYLE_OPTIONS: StyleOption[] = [
   { 
-    id: 'minimal', 
-    name: 'Minimal', 
+    id: 'render', 
+    name: 'Render producto', 
     description: 'Fondo limpio y profesional',
     gradient: 'from-gray-50 to-white',
     bgClass: 'bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200'
   },
   { 
-    id: 'vibrant', 
-    name: 'Vibrant', 
-    description: 'Colores llamativos para promociones',
+    id: 'promo', 
+    name: 'Promocional', 
+    description: 'Colores llamativos para ofertas',
     gradient: 'from-orange-500 to-pink-500',
     bgClass: 'bg-gradient-to-br from-orange-500 to-pink-500'
   },
   { 
-    id: 'neon', 
-    name: 'Neon', 
-    description: 'Estilo gaming con RGB',
+    id: 'infopartes', 
+    name: 'Estilo InfoPartes', 
+    description: 'Identidad de marca',
     gradient: 'from-purple-600 to-cyan-400',
     bgClass: 'bg-gradient-to-br from-purple-600 to-cyan-400'
   },
   { 
-    id: 'ocean', 
-    name: 'Ocean', 
+    id: 'tech', 
+    name: 'Tech Premium', 
     description: 'Tonos azules profesionales',
     gradient: 'from-blue-600 to-teal-400',
     bgClass: 'bg-gradient-to-br from-blue-600 to-teal-400'
   },
   { 
-    id: 'sunset', 
-    name: 'Sunset', 
-    description: 'Cálido y atractivo',
+    id: 'gaming', 
+    name: 'Gaming RGB', 
+    description: 'Estilo gamer con colores vivos',
     gradient: 'from-amber-500 to-rose-500',
     bgClass: 'bg-gradient-to-br from-amber-500 to-rose-500'
   },
@@ -167,7 +164,7 @@ const MOCK_CONTENT: ContentPiece[] = [
     cta: 'Consultar por WhatsApp',
     scheduledDate: '2025-12-27',
     scheduledTime: '10:00',
-    selectedStyle: 'neon',
+    selectedStyle: 'infopartes',
     gradient: 'from-purple-600 to-cyan-400'
   },
   {
@@ -186,7 +183,7 @@ const MOCK_CONTENT: ContentPiece[] = [
     cta: 'Ver disponibilidad',
     scheduledDate: '2025-12-28',
     scheduledTime: '14:00',
-    selectedStyle: 'minimal',
+    selectedStyle: 'render',
     gradient: 'from-gray-50 to-white'
   },
   {
@@ -205,7 +202,7 @@ const MOCK_CONTENT: ContentPiece[] = [
     cta: 'Ver en tienda',
     scheduledDate: '2025-12-27',
     scheduledTime: '18:00',
-    selectedStyle: 'ocean',
+    selectedStyle: 'tech',
     gradient: 'from-blue-600 to-teal-400'
   },
   {
@@ -224,7 +221,7 @@ const MOCK_CONTENT: ContentPiece[] = [
     cta: 'Solicitar cotización',
     scheduledDate: '2025-12-26',
     scheduledTime: '12:00',
-    selectedStyle: 'vibrant',
+    selectedStyle: 'promo',
     gradient: 'from-orange-500 to-pink-500',
     metrics: {
       reach: 3850,
@@ -270,36 +267,32 @@ const typeLabels: Record<ContentType, string> = {
 };
 
 const SAMPLE_CAPTIONS: Record<string, string[]> = {
-  minimal: [
+  render: [
     'Disponible en stock. Calidad premium garantizada.',
     'Nuevo ingreso. Consultá precio y disponibilidad.',
     'Stock limitado. El mejor precio del mercado.',
   ],
-  vibrant: [
+  promo: [
     '¡OFERTA ESPECIAL! Solo por tiempo limitado.',
     'Los mejores precios del año están acá.',
     'No te lo pierdas. Stock limitado.',
   ],
-  neon: [
+  infopartes: [
     'Llevá tu setup al siguiente nivel.',
     'RGB + Potencia. Dominá cada partida.',
     'El upgrade que tu PC necesita.',
   ],
-  ocean: [
+  tech: [
     'Tecnología de última generación.',
     'Rendimiento profesional garantizado.',
     'Calidad que marca la diferencia.',
   ],
-  sunset: [
+  gaming: [
     'Dale vida a tu espacio de trabajo.',
     'Diseño y performance en uno.',
     'Elegí lo mejor para vos.',
   ],
 };
-
-const SAMPLE_HASHTAGS = [
-  '#infopartes', '#pcgaming', '#hardware', '#tecnologia', '#argentina'
-];
 
 const VARIANT_GRADIENTS = [
   'from-purple-600 to-cyan-400',
@@ -312,12 +305,10 @@ export const MarketingView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'generate' | 'pending' | 'calendar' | 'published'>('generate');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [promptInstructions, setPromptInstructions] = useState<string>('');
-  const [showInstructions, setShowInstructions] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>('idle');
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
   const [generatedCaption, setGeneratedCaption] = useState<string>('');
-  const [generatedHashtags, setGeneratedHashtags] = useState<string[]>([]);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editedCaption, setEditedCaption] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -328,7 +319,6 @@ export const MarketingView: React.FC = () => {
   const [selectedFormat, setSelectedFormat] = useState<ContentFormat>('feed');
   const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
-  const [copiedHashtags, setCopiedHashtags] = useState(false);
 
   const pendingContent = content.filter(c => c.status === 'pending');
   const approvedContent = content.filter(c => c.status === 'approved');
@@ -377,7 +367,6 @@ export const MarketingView: React.FC = () => {
         setGenerationStatus('idle');
         setSelectedStyle(null);
         setGeneratedCaption('');
-        setGeneratedHashtags([]);
         setGeneratedVariants([]);
         setSelectedVariant(null);
         setIsEditingCaption(false);
@@ -405,7 +394,7 @@ export const MarketingView: React.FC = () => {
     setSelectedVariant(null);
     
     setTimeout(() => {
-      const captions = SAMPLE_CAPTIONS[styleId] || SAMPLE_CAPTIONS['minimal'];
+      const captions = SAMPLE_CAPTIONS[styleId] || SAMPLE_CAPTIONS['render'];
       
       const variants: GeneratedVariant[] = [
         { id: 1, gradient: VARIANT_GRADIENTS[0], caption: captions[0] },
@@ -414,7 +403,6 @@ export const MarketingView: React.FC = () => {
       ];
       
       setGeneratedVariants(variants);
-      setGeneratedHashtags(SAMPLE_HASHTAGS);
       setSelectedVariant(1);
       setGeneratedCaption(variants[0].caption);
       setEditedCaption(variants[0].caption);
@@ -437,7 +425,7 @@ export const MarketingView: React.FC = () => {
     setSelectedVariant(null);
     
     setTimeout(() => {
-      const captions = SAMPLE_CAPTIONS[selectedStyle] || SAMPLE_CAPTIONS['minimal'];
+      const captions = SAMPLE_CAPTIONS[selectedStyle] || SAMPLE_CAPTIONS['render'];
       const shuffledCaptions = [...captions].sort(() => Math.random() - 0.5);
       const shuffledGradients = [...VARIANT_GRADIENTS].sort(() => Math.random() - 0.5);
       
@@ -460,18 +448,10 @@ export const MarketingView: React.FC = () => {
     setIsEditingCaption(false);
   };
 
-  const handleCopyHashtags = () => {
-    navigator.clipboard.writeText(generatedHashtags.join(' '));
-    setCopiedHashtags(true);
-    setTimeout(() => setCopiedHashtags(false), 2000);
-  };
-
   const handleClearAll = () => {
     setUploadedImage(null);
     setPromptInstructions('');
-    setShowInstructions(false);
     setGeneratedCaption('');
-    setGeneratedHashtags([]);
     setGenerationStatus('idle');
     setSelectedStyle(null);
     setHoveredStyle(null);
@@ -500,7 +480,7 @@ export const MarketingView: React.FC = () => {
       platforms: selectedPlatforms,
       status: 'approved',
       caption: generatedCaption,
-      hashtags: generatedHashtags,
+      hashtags: [],
       cta: 'Consultar por WhatsApp',
       scheduledDate: new Date().toISOString().split('T')[0],
       scheduledTime: '10:00',
@@ -587,57 +567,9 @@ export const MarketingView: React.FC = () => {
 
       {activeTab === 'generate' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column: Upload */}
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
-              <div className="flex flex-wrap gap-2">
-                {PLATFORM_OPTIONS.map((platform) => {
-                  const isSelected = selectedPlatforms.includes(platform.id);
-                  return (
-                    <button
-                      key={platform.id}
-                      onClick={() => handlePlatformToggle(platform.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        isSelected 
-                          ? `${platform.bgColor} border-2 ${platform.color}` 
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
-                      {platform.name}
-                      {isSelected && <Check size={14} className={platform.color} />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {FORMAT_OPTIONS.map((format) => {
-                  const isSelected = selectedFormat === format.id;
-                  return (
-                    <button
-                      key={format.id}
-                      onClick={() => setSelectedFormat(format.id)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                        isSelected 
-                          ? 'border-gray-900 bg-gray-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
-                      <div className="text-center">
-                        <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
-                        <p className="text-xs text-gray-400">{format.ratio}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
+            {/* Upload Area */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               {!uploadedImage ? (
                 <div
@@ -655,7 +587,7 @@ export const MarketingView: React.FC = () => {
                       <p className="text-gray-600 font-medium">Subiendo...</p>
                     </div>
                   ) : (
-                    <div className="py-4">
+                    <div className="py-8">
                       <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors ${
                         isDragging ? 'bg-gray-200' : 'bg-gray-100'
                       }`}>
@@ -693,7 +625,63 @@ export const MarketingView: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
 
+          {/* Right Column: Options + Preview */}
+          <div className="space-y-5">
+            {/* Platform Selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORM_OPTIONS.map((platform) => {
+                  const isSelected = selectedPlatforms.includes(platform.id);
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handlePlatformToggle(platform.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected 
+                          ? `${platform.bgColor} border-2 ${platform.color}` 
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? platform.color : 'text-gray-400'}>{platform.icon}</span>
+                      {platform.name}
+                      {isSelected && <Check size={14} className={platform.color} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Format Selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {FORMAT_OPTIONS.map((format) => {
+                  const isSelected = selectedFormat === format.id;
+                  return (
+                    <button
+                      key={format.id}
+                      onClick={() => setSelectedFormat(format.id)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                        isSelected 
+                          ? 'border-gray-900 bg-gray-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={isSelected ? 'text-gray-900' : 'text-gray-400'}>{format.icon}</span>
+                      <div className="text-center">
+                        <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{format.name}</p>
+                        <p className="text-xs text-gray-400">{format.ratio}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Style Selection */}
             <div className={`bg-white rounded-2xl border border-gray-100 p-5 transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
@@ -742,260 +730,222 @@ export const MarketingView: React.FC = () => {
               </div>
             </div>
 
-            <div className={`transition-opacity ${uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-              <button
-                onClick={() => setShowInstructions(!showInstructions)}
-                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <ChevronDown size={16} className={`transition-transform ${showInstructions ? 'rotate-180' : ''}`} />
-                Agregar instrucciones personalizadas
-              </button>
-              
-              {showInstructions && (
-                <div className="mt-3 bg-white rounded-xl border border-gray-100 p-4">
-                  <textarea
-                    value={promptInstructions}
-                    onChange={(e) => setPromptInstructions(e.target.value)}
-                    placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño..."
-                    rows={2}
-                    className="w-full px-3 py-2 bg-gray-50 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 placeholder:text-gray-400 resize-none"
-                  />
-                  <p className="text-xs text-gray-400 mt-2">Se agregan al prompt de generación</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-medium text-gray-900 flex items-center gap-2">
-                <Eye size={16} />
-                Vista previa
+            {/* Custom Instructions Card */}
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 transition-opacity ${
+              uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
+            }`}>
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <MessageSquare size={16} />
+                Instrucciones personalizadas
               </h3>
-              {selectedPlatforms.length > 0 && (
-                <div className="flex items-center gap-1">
-                  {selectedPlatforms.map((p) => (
-                    <span key={p} className="p-1">{platformIcons[p]}</span>
-                  ))}
-                  <span className="text-xs text-gray-400 ml-2">
-                    {FORMAT_OPTIONS.find(f => f.id === selectedFormat)?.dimensions}
-                  </span>
-                </div>
-              )}
+              <textarea
+                value={promptInstructions}
+                onChange={(e) => setPromptInstructions(e.target.value)}
+                placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño, destacar que es último stock..."
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
+              />
+              <p className="text-xs text-gray-400 mt-2">Opcional: se agregan al prompt de generación de IA</p>
             </div>
-            
-            {uploadedImage && generatedVariants.length > 0 ? (
-              <div className="space-y-5">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 mb-3">Elegí una variante</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {generatedVariants.map((variant) => {
-                      const isSelected = selectedVariant === variant.id;
-                      return (
-                        <button
-                          key={variant.id}
-                          onClick={() => handleVariantSelect(variant.id)}
-                          className={`relative rounded-xl overflow-hidden border-2 transition-all ${
-                            isSelected 
-                              ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
-                              : 'border-gray-200 hover:border-gray-400'
-                          }`}
-                        >
-                          <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-2`}>
+
+            {/* Preview */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-medium text-gray-900 flex items-center gap-2">
+                  <Eye size={16} />
+                  Vista previa
+                </h3>
+                {selectedPlatforms.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    {selectedPlatforms.map((p) => (
+                      <span key={p} className="p-1">{platformIcons[p]}</span>
+                    ))}
+                    <span className="text-xs text-gray-400 ml-2">
+                      {FORMAT_OPTIONS.find(f => f.id === selectedFormat)?.dimensions}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {uploadedImage && generatedVariants.length > 0 ? (
+                <div className="space-y-5">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-3">Elegí una variante</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {generatedVariants.map((variant) => {
+                        const isSelected = selectedVariant === variant.id;
+                        return (
+                          <button
+                            key={variant.id}
+                            onClick={() => handleVariantSelect(variant.id)}
+                            className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                              isSelected 
+                                ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
+                                : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-2`}>
+                              <img 
+                                src={uploadedImage} 
+                                alt={`Variant ${variant.id}`} 
+                                className="max-w-[80%] max-h-[80%] object-contain rounded shadow-lg"
+                              />
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
+                                <Check size={14} className="text-white" />
+                              </div>
+                            )}
+                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                              {variant.id}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {selectedVariant && (
+                    <div className="flex justify-center">
+                      <div className="bg-gray-900 rounded-[2rem] p-2.5 shadow-2xl" style={getMockupStyle(selectedFormat)}>
+                        <div className="bg-white rounded-[1.5rem] overflow-hidden">
+                          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
+                              <span className="text-xs font-semibold text-gray-900">infopartes</span>
+                            </div>
+                            <MoreVertical size={14} className="text-gray-400" />
+                          </div>
+                          
+                          <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
                             <img 
                               src={uploadedImage} 
-                              alt={`Variant ${variant.id}`} 
-                              className="max-w-[80%] max-h-[80%] object-contain rounded shadow-lg"
+                              alt="Preview" 
+                              className="absolute inset-4 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
                             />
                           </div>
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
-                              <Check size={14} className="text-white" />
+                          
+                          <div className="p-3">
+                            <div className="flex items-center gap-4 mb-2">
+                              <Heart size={20} className="text-gray-800" />
+                              <MessageCircle size={20} className="text-gray-800" />
+                              <Share2 size={20} className="text-gray-800" />
                             </div>
-                          )}
-                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            {variant.id}
+                            <p className="text-xs text-gray-900">
+                              <span className="font-semibold">infopartes</span>{' '}
+                              <span className="text-gray-600">
+                                {generatedCaption ? generatedCaption.substring(0, 40) + '...' : ''}
+                              </span>
+                            </p>
                           </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {selectedVariant && (
-                  <div className="flex justify-center">
-                    <div className="bg-gray-900 rounded-[2rem] p-2.5 shadow-2xl" style={getMockupStyle(selectedFormat)}>
-                      <div className="bg-white rounded-[1.5rem] overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
-                            <span className="text-xs font-semibold text-gray-900">infopartes</span>
-                          </div>
-                          <MoreVertical size={14} className="text-gray-400" />
-                        </div>
-                        
-                        <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
-                          <img 
-                            src={uploadedImage} 
-                            alt="Preview" 
-                            className="absolute inset-4 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
-                          />
-                        </div>
-                        
-                        <div className="p-3">
-                          <div className="flex items-center gap-4 mb-2">
-                            <Heart size={20} className="text-gray-800" />
-                            <MessageCircle size={20} className="text-gray-800" />
-                            <Share2 size={20} className="text-gray-800" />
-                          </div>
-                          <p className="text-xs text-gray-900">
-                            <span className="font-semibold">infopartes</span>{' '}
-                            <span className="text-gray-600">
-                              {generatedCaption ? generatedCaption.substring(0, 40) + '...' : ''}
-                            </span>
-                          </p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                
-                {generatedCaption && (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500">Caption sugerido</span>
-                      {!isEditingCaption && (
-                        <button 
-                          onClick={() => setIsEditingCaption(true)}
-                          className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1"
-                        >
-                          <Edit3 size={12} />
-                          Editar
-                        </button>
+                  )}
+                  
+                  {generatedCaption && (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-500">Caption sugerido</span>
+                        {!isEditingCaption && (
+                          <button 
+                            onClick={() => setIsEditingCaption(true)}
+                            className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1"
+                          >
+                            <Edit3 size={12} />
+                            Editar
+                          </button>
+                        )}
+                      </div>
+                      
+                      {isEditingCaption ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={editedCaption}
+                            onChange={(e) => setEditedCaption(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+                            rows={3}
+                          />
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={handleSaveCaption}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium"
+                            >
+                              <Save size={12} />
+                              Guardar
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setIsEditingCaption(false);
+                                setEditedCaption(generatedCaption);
+                              }}
+                              className="px-3 py-1.5 text-gray-600 text-xs font-medium hover:bg-gray-200 rounded-lg"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-700">{generatedCaption}</p>
                       )}
                     </div>
-                    
-                    {isEditingCaption ? (
-                      <div className="space-y-2">
-                        <textarea
-                          value={editedCaption}
-                          onChange={(e) => setEditedCaption(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
-                          rows={3}
-                        />
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={handleSaveCaption}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium"
-                          >
-                            <Save size={12} />
-                            Guardar
-                          </button>
-                          <button 
-                            onClick={() => {
-                              setIsEditingCaption(false);
-                              setEditedCaption(generatedCaption);
-                            }}
-                            className="px-3 py-1.5 text-gray-600 text-xs font-medium hover:bg-gray-200 rounded-lg"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
+                  )}
+                  
+                  {generationStatus === 'complete' && (
+                    <div className="space-y-2">
+                      <button 
+                        onClick={handleApproveGenerated}
+                        disabled={!selectedVariant}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Check size={18} />
+                        Aprobar y programar
+                      </button>
+                      
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={handleRegenerate}
+                          disabled={isRegenerating}
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+                        >
+                          {isRegenerating ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <RefreshCw size={14} />
+                          )}
+                          Regenerar 3 variantes
+                        </button>
+                        <button 
+                          onClick={handleClearAll}
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                          Descartar
+                        </button>
                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-700">{generatedCaption}</p>
-                    )}
-                  </div>
-                )}
-
-                {generatedHashtags.length > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                        <Hash size={12} />
-                        Hashtags
-                      </span>
-                      <button 
-                        onClick={handleCopyHashtags}
-                        className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1"
-                      >
-                        {copiedHashtags ? (
-                          <>
-                            <CheckCircle2 size={12} className="text-green-500" />
-                            <span className="text-green-600">Copiado</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={12} />
-                            Copiar
-                          </>
-                        )}
-                      </button>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {generatedHashtags.map((tag, i) => (
-                        <span key={i} className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {generationStatus === 'complete' && (
-                  <div className="space-y-2">
-                    <button 
-                      onClick={handleApproveGenerated}
-                      disabled={!selectedVariant}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Check size={18} />
-                      Aprobar y programar
-                    </button>
-                    
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handleRegenerate}
-                        disabled={isRegenerating}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-                      >
-                        {isRegenerating ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <RefreshCw size={14} />
-                        )}
-                        Regenerar 3 variantes
-                      </button>
-                      <button 
-                        onClick={handleClearAll}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        Descartar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : uploadedImage && generationStatus === 'generating' ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Loader2 size={40} className="text-gray-400 animate-spin mb-4" />
-                <p className="text-gray-500 font-medium">Generando 3 variantes...</p>
-                <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                  <Sparkles size={32} className="text-gray-300" />
+                  )}
                 </div>
-                <p className="text-gray-500 font-medium">
-                  {!uploadedImage ? 'Subí una imagen' : 'Elegí un estilo'}
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  {!uploadedImage ? 'para empezar a crear' : 'para generar 3 variantes'}
-                </p>
-              </div>
-            )}
+              ) : uploadedImage && generationStatus === 'generating' ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <Loader2 size={40} className="text-gray-400 animate-spin mb-4" />
+                  <p className="text-gray-500 font-medium">Generando 3 variantes...</p>
+                  <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                    <Sparkles size={32} className="text-gray-300" />
+                  </div>
+                  <p className="text-gray-500 font-medium">
+                    {!uploadedImage ? 'Subí una imagen' : 'Elegí un estilo'}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {!uploadedImage ? 'para empezar a crear' : 'para generar 3 variantes'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
