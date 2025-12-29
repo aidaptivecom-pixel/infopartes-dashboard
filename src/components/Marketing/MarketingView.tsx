@@ -97,11 +97,11 @@ interface ContentPiece {
 }
 
 const PLATFORM_OPTIONS: PlatformOption[] = [
-  { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: 'text-pink-600', bgColor: 'bg-pink-50 border-pink-200 hover:bg-pink-100' },
-  { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: 'text-blue-600', bgColor: 'bg-blue-50 border-blue-200 hover:bg-blue-100' },
-  { id: 'tiktok', name: 'TikTok', icon: <Play size={18} />, color: 'text-gray-900', bgColor: 'bg-gray-100 border-gray-300 hover:bg-gray-200' },
-  { id: 'whatsapp', name: 'WA Story', icon: <Smartphone size={18} />, color: 'text-green-600', bgColor: 'bg-green-50 border-green-200 hover:bg-green-100' },
-  { id: 'web', name: 'Web', icon: <Globe size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-50 border-purple-200 hover:bg-purple-100' },
+  { id: 'instagram', name: 'Instagram', icon: <Instagram size={16} />, color: 'text-pink-600', bgColor: 'bg-pink-50 border-pink-200 hover:bg-pink-100' },
+  { id: 'facebook', name: 'Facebook', icon: <Facebook size={16} />, color: 'text-blue-600', bgColor: 'bg-blue-50 border-blue-200 hover:bg-blue-100' },
+  { id: 'tiktok', name: 'TikTok', icon: <Play size={16} />, color: 'text-gray-900', bgColor: 'bg-gray-100 border-gray-300 hover:bg-gray-200' },
+  { id: 'whatsapp', name: 'WA Story', icon: <Smartphone size={16} />, color: 'text-green-600', bgColor: 'bg-green-50 border-green-200 hover:bg-green-100' },
+  { id: 'web', name: 'Web', icon: <Globe size={16} />, color: 'text-purple-600', bgColor: 'bg-purple-50 border-purple-200 hover:bg-purple-100' },
 ];
 
 const FORMAT_OPTIONS: FormatOption[] = [
@@ -576,9 +576,9 @@ export const MarketingView: React.FC = () => {
           {/* 2x2 Grid - Same Height Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Top Left: Red Social */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
-              <div className="flex-1 flex items-center justify-center">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Red social</h3>
+              <div className="h-[calc(100%-32px)] flex items-center justify-center">
                 <div className="flex flex-wrap gap-2 justify-center">
                   {PLATFORM_OPTIONS.map((platform) => {
                     const isSelected = selectedPlatforms.includes(platform.id);
@@ -586,7 +586,7 @@ export const MarketingView: React.FC = () => {
                       <button
                         key={platform.id}
                         onClick={() => handlePlatformToggle(platform.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                           isSelected 
                             ? `${platform.bgColor} border-2 ${platform.color}` 
                             : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
@@ -603,9 +603,9 @@ export const MarketingView: React.FC = () => {
             </div>
 
             {/* Top Right: Formato */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
-              <div className="flex-1 flex items-center">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[180px]">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Formato</h3>
+              <div className="h-[calc(100%-32px)] flex items-center">
                 <div className="grid grid-cols-3 gap-3 w-full">
                   {FORMAT_OPTIONS.map((format) => {
                     const isSelected = selectedFormat === format.id;
@@ -632,12 +632,12 @@ export const MarketingView: React.FC = () => {
             </div>
 
             {/* Bottom Left: Elegí un estilo */}
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col transition-opacity ${
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Elegí un estilo</h3>
-              <div className="flex-1 flex items-center">
-                <div className="grid grid-cols-5 gap-2 w-full">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Elegí un estilo</h3>
+              <div className="h-[calc(100%-32px)] flex items-center justify-center">
+                <div className="flex gap-4 justify-center">
                   {STYLE_OPTIONS.map((style) => {
                     const isSelected = selectedStyle === style.id;
                     const isHovered = hoveredStyle === style.id;
@@ -649,11 +649,11 @@ export const MarketingView: React.FC = () => {
                         onMouseEnter={() => setHoveredStyle(style.id)}
                         onMouseLeave={() => setHoveredStyle(null)}
                         disabled={!uploadedImage || generationStatus === 'generating'}
-                        className="group flex flex-col items-center"
+                        className="group flex flex-col items-center gap-2"
                       >
-                        <div className={`relative w-14 h-14 rounded-xl overflow-hidden transition-all duration-200 ${
+                        <div className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
                           isSelected 
-                            ? 'ring-2 ring-gray-900 ring-offset-2 scale-110' 
+                            ? 'ring-2 ring-gray-900 ring-offset-2 scale-105' 
                             : isHovered
                             ? 'ring-2 ring-gray-300 ring-offset-1 scale-105'
                             : 'hover:scale-105'
@@ -674,16 +674,16 @@ export const MarketingView: React.FC = () => {
                             </div>
                           )}
                           {isSelected && generationStatus === 'complete' && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 rounded-full flex items-center justify-center">
-                              <Check size={10} className="text-white" />
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                              <Check size={12} className="text-white" />
                             </div>
                           )}
                         </div>
-                        <p className={`text-[10px] mt-1 text-center transition-colors ${
+                        <span className={`text-xs transition-colors ${
                           isSelected ? 'text-gray-900 font-semibold' : 'text-gray-500'
                         }`}>
                           {style.name}
-                        </p>
+                        </span>
                       </button>
                     );
                   })}
@@ -692,10 +692,10 @@ export const MarketingView: React.FC = () => {
             </div>
 
             {/* Bottom Right: Instrucciones */}
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[160px] flex flex-col transition-opacity ${
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
-              <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <MessageSquare size={14} />
                 Instrucciones personalizadas
               </h3>
@@ -703,10 +703,10 @@ export const MarketingView: React.FC = () => {
                 value={promptInstructions}
                 onChange={(e) => setPromptInstructions(e.target.value)}
                 placeholder="Ej: Agrega nieve, incluí '25% OFF', estilo navideño..."
-                rows={2}
-                className="flex-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 resize-none"
               />
-              <p className="text-[10px] text-gray-400 mt-1">Opcional: se agregan al prompt de IA</p>
+              <p className="text-xs text-gray-400 mt-2">Opcional: se agregan al prompt de IA</p>
             </div>
           </div>
 
