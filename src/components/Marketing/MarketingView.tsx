@@ -246,7 +246,7 @@ const WEEKLY_SCHEDULE = [
   { day: 'Dom', date: '29', posts: 0, status: 'empty' },
 ];
 
-const platformIcons = {
+const platformIcons: Record<Platform, React.ReactNode> = {
   instagram: <Instagram size={14} className="text-pink-500" />,
   facebook: <Facebook size={14} className="text-blue-600" />,
   tiktok: <Play size={14} className="text-gray-900" />,
@@ -324,7 +324,6 @@ export const MarketingView: React.FC = () => {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // New state for platform, format, and variants
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(['instagram']);
   const [selectedFormat, setSelectedFormat] = useState<ContentFormat>('feed');
   const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
@@ -390,7 +389,7 @@ export const MarketingView: React.FC = () => {
   const handlePlatformToggle = (platformId: Platform) => {
     setSelectedPlatforms(prev => {
       if (prev.includes(platformId)) {
-        if (prev.length === 1) return prev; // Keep at least one selected
+        if (prev.length === 1) return prev;
         return prev.filter(p => p !== platformId);
       }
       return [...prev, platformId];
@@ -405,11 +404,9 @@ export const MarketingView: React.FC = () => {
     setIsEditingCaption(false);
     setSelectedVariant(null);
     
-    // Simulate AI generation of 3 variants
     setTimeout(() => {
       const captions = SAMPLE_CAPTIONS[styleId] || SAMPLE_CAPTIONS['minimal'];
       
-      // Generate 3 variants with different gradients and captions
       const variants: GeneratedVariant[] = [
         { id: 1, gradient: VARIANT_GRADIENTS[0], caption: captions[0] },
         { id: 2, gradient: VARIANT_GRADIENTS[1], caption: captions[1] },
@@ -418,7 +415,7 @@ export const MarketingView: React.FC = () => {
       
       setGeneratedVariants(variants);
       setGeneratedHashtags(SAMPLE_HASHTAGS);
-      setSelectedVariant(1); // Auto-select first variant
+      setSelectedVariant(1);
       setGeneratedCaption(variants[0].caption);
       setEditedCaption(variants[0].caption);
       setGenerationStatus('complete');
@@ -499,7 +496,7 @@ export const MarketingView: React.FC = () => {
         price: 100000,
         image: '📦'
       },
-      type: selectedFormat as ContentType,
+      type: selectedFormat,
       platforms: selectedPlatforms,
       status: 'approved',
       caption: generatedCaption,
@@ -516,7 +513,6 @@ export const MarketingView: React.FC = () => {
     setActiveTab('pending');
   };
 
-  // Get aspect ratio class based on format
   const getAspectClass = (format: ContentFormat) => {
     switch (format) {
       case 'feed': return 'aspect-square';
@@ -526,7 +522,6 @@ export const MarketingView: React.FC = () => {
     }
   };
 
-  // Get mockup dimensions based on format
   const getMockupStyle = (format: ContentFormat) => {
     switch (format) {
       case 'feed': return { width: '280px' };
@@ -538,7 +533,6 @@ export const MarketingView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Contenido</h1>
@@ -550,7 +544,6 @@ export const MarketingView: React.FC = () => {
         </button>
       </div>
 
-      {/* KPIs - More compact */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: 'Alcance', value: '18.2K', change: '+24%', icon: TrendingUp, color: 'text-emerald-600' },
@@ -570,7 +563,6 @@ export const MarketingView: React.FC = () => {
         ))}
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
         {[
           { id: 'generate', label: 'Crear', icon: Wand2 },
@@ -593,12 +585,9 @@ export const MarketingView: React.FC = () => {
         ))}
       </div>
 
-      {/* Generate Tab - Premium redesign */}
       {activeTab === 'generate' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Upload + Options */}
           <div className="space-y-5">
-            {/* Platform Selection */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Red social</h3>
               <div className="flex flex-wrap gap-2">
@@ -623,7 +612,6 @@ export const MarketingView: React.FC = () => {
               </div>
             </div>
 
-            {/* Format Selection */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Formato</h3>
               <div className="grid grid-cols-3 gap-3">
@@ -650,7 +638,6 @@ export const MarketingView: React.FC = () => {
               </div>
             </div>
 
-            {/* Upload Area */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               {!uploadedImage ? (
                 <div
@@ -659,9 +646,7 @@ export const MarketingView: React.FC = () => {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={`relative p-8 text-center cursor-pointer transition-all ${
-                    isDragging 
-                      ? 'bg-gray-50' 
-                      : 'hover:bg-gray-50'
+                    isDragging ? 'bg-gray-50' : 'hover:bg-gray-50'
                   }`}
                 >
                   {generationStatus === 'uploading' ? (
@@ -709,7 +694,6 @@ export const MarketingView: React.FC = () => {
               )}
             </div>
 
-            {/* Style Selection */}
             <div className={`bg-white rounded-2xl border border-gray-100 p-5 transition-opacity ${
               uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
@@ -758,7 +742,6 @@ export const MarketingView: React.FC = () => {
               </div>
             </div>
 
-            {/* Additional Instructions - Collapsible */}
             <div className={`transition-opacity ${uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
               <button
                 onClick={() => setShowInstructions(!showInstructions)}
@@ -783,7 +766,6 @@ export const MarketingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Preview with 3 Variants */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-medium text-gray-900 flex items-center gap-2">
@@ -804,7 +786,6 @@ export const MarketingView: React.FC = () => {
             
             {uploadedImage && generatedVariants.length > 0 ? (
               <div className="space-y-5">
-                {/* 3 Variants Grid */}
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-3">Elegí una variante</p>
                   <div className="grid grid-cols-3 gap-3">
@@ -841,12 +822,10 @@ export const MarketingView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Selected Variant Preview - Phone mockup */}
                 {selectedVariant && (
                   <div className="flex justify-center">
                     <div className="bg-gray-900 rounded-[2rem] p-2.5 shadow-2xl" style={getMockupStyle(selectedFormat)}>
                       <div className="bg-white rounded-[1.5rem] overflow-hidden">
-                        {/* IG Header */}
                         <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
@@ -855,7 +834,6 @@ export const MarketingView: React.FC = () => {
                           <MoreVertical size={14} className="text-gray-400" />
                         </div>
                         
-                        {/* Image with selected variant */}
                         <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
                           <img 
                             src={uploadedImage} 
@@ -864,7 +842,6 @@ export const MarketingView: React.FC = () => {
                           />
                         </div>
                         
-                        {/* Actions */}
                         <div className="p-3">
                           <div className="flex items-center gap-4 mb-2">
                             <Heart size={20} className="text-gray-800" />
@@ -883,7 +860,6 @@ export const MarketingView: React.FC = () => {
                   </div>
                 )}
                 
-                {/* Caption Section */}
                 {generatedCaption && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -932,7 +908,6 @@ export const MarketingView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Hashtags Section */}
                 {generatedHashtags.length > 0 && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -967,7 +942,6 @@ export const MarketingView: React.FC = () => {
                   </div>
                 )}
                 
-                {/* Actions */}
                 {generationStatus === 'complete' && (
                   <div className="space-y-2">
                     <button 
