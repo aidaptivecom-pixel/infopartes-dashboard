@@ -317,6 +317,10 @@ const VARIANT_GRADIENTS = [
 // Image card size constant - used for both reference images and variants
 const IMAGE_CARD_SIZE = 'w-[130px] h-[130px]';
 
+// Card heights - symmetric layout
+const LEFT_CARD_HEIGHT = 'h-[290px]';
+const PREVIEW_CARD_HEIGHT = 'h-[600px]'; // 290 + 290 + 20px gap = 600px
+
 export const MarketingView: React.FC = () => {
   const [content, setContent] = useState<ContentPiece[]>(MOCK_CONTENT);
   const [activeTab, setActiveTab] = useState<'generate' | 'pending' | 'calendar' | 'published'>('generate');
@@ -751,8 +755,8 @@ export const MarketingView: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Left Column: Reference Images + Variants - Same height cards */}
             <div className="flex flex-col gap-5">
-              {/* Reference Images Card - Fixed height */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[240px]">
+              {/* Reference Images Card */}
+              <div className={`bg-white rounded-2xl border border-gray-100 p-5 ${LEFT_CARD_HEIGHT}`}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
                     <Image size={14} />
@@ -763,7 +767,7 @@ export const MarketingView: React.FC = () => {
                   )}
                 </div>
                 
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center gap-4 mt-6">
                   {/* Show uploaded images */}
                   {uploadedImages.map((img, index) => (
                     <div 
@@ -835,8 +839,8 @@ export const MarketingView: React.FC = () => {
                 />
               </div>
 
-              {/* Variants Card - Fixed height */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[240px]">
+              {/* Variants Card */}
+              <div className={`bg-white rounded-2xl border border-gray-100 p-5 ${LEFT_CARD_HEIGHT}`}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-medium text-gray-900">Variantes generadas</h3>
                   {generatedVariants.length > 0 && (
@@ -856,7 +860,7 @@ export const MarketingView: React.FC = () => {
                 </div>
                 
                 {generatedVariants.length > 0 ? (
-                  <div className="flex justify-center gap-4">
+                  <div className="flex justify-center gap-4 mt-6">
                     {generatedVariants.map((variant) => {
                       const isSelected = selectedVariant === variant.id;
                       return (
@@ -896,7 +900,7 @@ export const MarketingView: React.FC = () => {
                     <p className="text-sm text-gray-500">Generando variantes...</p>
                   </div>
                 ) : (
-                  <div className="flex justify-center gap-4">
+                  <div className="flex justify-center gap-4 mt-6">
                     <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex items-center justify-center`}>
                       <Sparkles size={20} className="text-gray-300" />
                     </div>
@@ -908,7 +912,7 @@ export const MarketingView: React.FC = () => {
             </div>
 
             {/* Right Column: Preview - Same total height as left column */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[500px] flex flex-col">
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 ${PREVIEW_CARD_HEIGHT} flex flex-col`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900 flex items-center gap-2">
                   <Eye size={16} />
