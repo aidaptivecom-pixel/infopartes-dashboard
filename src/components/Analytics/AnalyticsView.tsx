@@ -247,9 +247,6 @@ export const AnalyticsView: React.FC = () => {
     return value.toString();
   };
 
-  const maxReach = Math.max(...WEEKLY_DATA.map(d => d.reach));
-  const maxEngagement = Math.max(...WEEKLY_DATA.map(d => d.engagement));
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -356,7 +353,7 @@ export const AnalyticsView: React.FC = () => {
             
             {/* Chart area */}
             <div className="ml-14 h-full flex items-end justify-between gap-3 pb-8 border-b border-gray-100">
-              {WEEKLY_DATA.map((day, index) => {
+              {WEEKLY_DATA.map((day) => {
                 const reachHeight = (day.reach / 10000) * 100;
                 const engagementHeight = (day.engagement / 15) * 100;
                 
@@ -455,9 +452,9 @@ export const AnalyticsView: React.FC = () => {
           </div>
           
           <div className="space-y-3">
-            {TOP_POSTS.map((post, index) => (
+            {TOP_POSTS.map((post, idx) => (
               <div key={post.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <span className="text-lg font-bold text-gray-300 w-6">{index + 1}</span>
+                <span className="text-lg font-bold text-gray-300 w-6">{idx + 1}</span>
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-2xl">
                   {post.image}
                 </div>
@@ -491,9 +488,9 @@ export const AnalyticsView: React.FC = () => {
           </div>
           
           <div className="space-y-3">
-            {TOP_PRODUCTS.map((product, index) => (
+            {TOP_PRODUCTS.map((product, idx) => (
               <div key={product.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <span className="text-lg font-bold text-gray-300 w-6">{index + 1}</span>
+                <span className="text-lg font-bold text-gray-300 w-6">{idx + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 text-sm truncate">{product.name}</p>
                   <p className="text-xs text-gray-500">{product.sku}</p>
