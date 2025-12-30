@@ -248,6 +248,7 @@ export const AnalyticsView: React.FC = () => {
   };
 
   const maxReach = Math.max(...WEEKLY_DATA.map(d => d.reach));
+  const maxEngagement = Math.max(...WEEKLY_DATA.map(d => d.engagement));
 
   return (
     <div className="space-y-6">
@@ -342,25 +343,56 @@ export const AnalyticsView: React.FC = () => {
             </div>
           </div>
           
-          {/* Simple Bar Chart */}
-          <div className="flex items-end justify-between gap-2 h-48">
-            {WEEKLY_DATA.map((day) => (
-              <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex flex-col items-center gap-1 flex-1 justify-end">
-                  {/* Reach bar */}
-                  <div 
-                    className="w-full bg-blue-500 rounded-t-md transition-all hover:bg-blue-600"
-                    style={{ height: `${(day.reach / maxReach) * 100}%` }}
-                    title={`Alcance: ${formatNumber(day.reach)}`}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500 font-medium">{day.day}</div>
-              </div>
-            ))}
+          {/* Bar Chart */}
+          <div className="relative h-52">
+            {/* Y-axis labels */}
+            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-gray-400">
+              <span>10K</span>
+              <span>7.5K</span>
+              <span>5K</span>
+              <span>2.5K</span>
+              <span>0</span>
+            </div>
+            
+            {/* Chart area */}
+            <div className="ml-14 h-full flex items-end justify-between gap-3 pb-8 border-b border-gray-100">
+              {WEEKLY_DATA.map((day, index) => {
+                const reachHeight = (day.reach / 10000) * 100;
+                const engagementHeight = (day.engagement / 15) * 100;
+                
+                return (
+                  <div key={day.day} className="flex-1 flex flex-col items-center gap-1">
+                    {/* Bars container */}
+                    <div className="w-full h-40 flex items-end justify-center gap-1">
+                      {/* Reach bar */}
+                      <div 
+                        className="w-5 bg-blue-500 rounded-t-md transition-all duration-500 hover:bg-blue-600 cursor-pointer relative group"
+                        style={{ height: `${reachHeight}%` }}
+                      >
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {formatNumber(day.reach)}
+                        </div>
+                      </div>
+                      {/* Engagement bar */}
+                      <div 
+                        className="w-5 bg-pink-500 rounded-t-md transition-all duration-500 hover:bg-pink-600 cursor-pointer relative group"
+                        style={{ height: `${engagementHeight}%` }}
+                      >
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {day.engagement}%
+                        </div>
+                      </div>
+                    </div>
+                    {/* Day label */}
+                    <span className="text-xs text-gray-500 font-medium mt-2">{day.day}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           
           {/* Stats summary */}
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100">
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">42.1K</p>
               <p className="text-xs text-gray-500">Alcance total</p>
