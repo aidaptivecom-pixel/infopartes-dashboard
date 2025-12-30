@@ -23,7 +23,6 @@ import {
   Trash2,
   Plus,
   Save,
-  ImageIcon,
   Smartphone,
   Globe,
   Square,
