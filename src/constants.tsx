@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquare, Calendar, Wrench, Users, Settings, HelpCircle, BarChart3, Megaphone, ShoppingCart, ClipboardList, Boxes, FileText, Truck, Inbox } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Calendar, Wrench, Users, Settings, HelpCircle, BarChart3, Megaphone, ShoppingCart, ClipboardList, Boxes, FileText, Truck, Inbox, Film } from 'lucide-react';
 
 export const DESIGN_TOKENS = {
   colors: {
@@ -45,6 +45,7 @@ export const NAVIGATION_ITEMS = [
   { group: 'MARKETING', items: [
     { label: 'Contenido', icon: <Megaphone size={18} />, path: '/marketing' },
     { label: 'Analytics', icon: <BarChart3 size={18} />, path: '/analytics' },
+    { label: 'Guía Reels', icon: <Film size={18} />, path: '/reels-guide' },
   ]},
   { group: 'CONFIGURACIÓN', items: [
     { label: 'Clientes', icon: <Users size={18} />, path: '/clients' },
