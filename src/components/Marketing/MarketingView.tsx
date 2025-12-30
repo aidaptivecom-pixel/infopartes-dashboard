@@ -730,8 +730,8 @@ export const MarketingView: React.FC = () => {
 
           {/* Bottom Row: Upload + Preview - Symmetric Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Left Column: Reference Image + Variants - Same height as preview */}
-            <div className="flex flex-col gap-5 min-h-[520px]">
+            {/* Left Column: Reference Image + Variants */}
+            <div className="flex flex-col gap-5">
               {/* Reference Image Card */}
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex-shrink-0">
                 {!uploadedImage ? (
@@ -795,10 +795,10 @@ export const MarketingView: React.FC = () => {
                 )}
               </div>
 
-              {/* Variants Card - Grows to fill remaining space */}
+              {/* Variants Card - Square cards without background colors */}
               {uploadedImage && generatedVariants.length > 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-medium text-gray-900">Elegí una variante</h3>
                     <button 
                       onClick={handleRegenerate}
@@ -813,37 +813,34 @@ export const MarketingView: React.FC = () => {
                       Regenerar
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 flex-1">
+                  <div className="flex justify-center gap-4">
                     {generatedVariants.map((variant) => {
                       const isSelected = selectedVariant === variant.id;
                       return (
                         <button
                           key={variant.id}
                           onClick={() => handleVariantSelect(variant.id)}
-                          className={`relative rounded-xl overflow-hidden border-2 transition-all h-full ${
+                          className={`relative rounded-xl overflow-hidden border-2 transition-all w-[140px] aspect-square bg-gray-50 ${
                             isSelected 
                               ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
                               : 'border-gray-200 hover:border-gray-400'
                           }`}
                         >
-                          <div className={`h-full bg-gradient-to-br ${variant.gradient} flex items-center justify-center p-3`}>
-                            <img 
-                              src={variant.image} 
-                              alt={`Variant ${variant.id}`} 
-                              className="max-w-full max-h-full object-contain rounded shadow-lg"
-                              onError={(e) => {
-                                // Fallback to uploaded image if demo image fails
-                                const target = e.target as HTMLImageElement;
-                                target.src = uploadedImage || '';
-                              }}
-                            />
-                          </div>
+                          <img 
+                            src={variant.image} 
+                            alt={`Variant ${variant.id}`} 
+                            className="w-full h-full object-contain p-2"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = uploadedImage || '';
+                            }}
+                          />
                           {isSelected && (
-                            <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                            <div className="absolute top-2 right-2 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
                               <Check size={12} className="text-white" />
                             </div>
                           )}
-                          <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                             {variant.id}
                           </div>
                         </button>
@@ -855,7 +852,7 @@ export const MarketingView: React.FC = () => {
 
               {/* Loading state for variants */}
               {uploadedImage && generationStatus === 'generating' && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex-1 flex flex-col items-center justify-center">
+                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center justify-center">
                   <Loader2 size={32} className="text-gray-400 animate-spin mb-3" />
                   <p className="text-gray-500 font-medium">Generando variantes...</p>
                   <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
@@ -864,7 +861,7 @@ export const MarketingView: React.FC = () => {
 
               {/* Empty state when no variants */}
               {uploadedImage && generationStatus === 'idle' && generatedVariants.length === 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex-1 flex flex-col items-center justify-center">
+                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center justify-center">
                   <Sparkles size={32} className="text-gray-300 mb-3" />
                   <p className="text-gray-500 font-medium">Elegí un estilo</p>
                   <p className="text-sm text-gray-400 mt-1">para generar variantes</p>
@@ -872,8 +869,8 @@ export const MarketingView: React.FC = () => {
               )}
             </div>
 
-            {/* Right Column: Preview - Fixed height */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 min-h-[520px] flex flex-col">
+            {/* Right Column: Preview */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900 flex items-center gap-2">
                   <Eye size={16} />
@@ -905,11 +902,12 @@ export const MarketingView: React.FC = () => {
                           <MoreVertical size={12} className="text-gray-400" />
                         </div>
                         
-                        <div className={`${getAspectClass(selectedFormat)} bg-gradient-to-br ${generatedVariants.find(v => v.id === selectedVariant)?.gradient} flex items-center justify-center relative`}>
+                        {/* Preview without gradient - clean background */}
+                        <div className={`${getAspectClass(selectedFormat)} bg-gray-100 flex items-center justify-center relative`}>
                           <img 
                             src={getCurrentVariantImage() || ''} 
                             alt="Preview" 
-                            className="absolute inset-3 w-auto h-auto max-w-[70%] max-h-[70%] object-contain mx-auto my-auto rounded-lg shadow-2xl"
+                            className="w-full h-full object-contain p-4"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               if (uploadedImage) target.src = uploadedImage;
@@ -1006,7 +1004,7 @@ export const MarketingView: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
                     <Sparkles size={28} className="text-gray-300" />
                   </div>
