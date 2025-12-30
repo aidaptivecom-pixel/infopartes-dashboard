@@ -315,10 +315,13 @@ const VARIANT_GRADIENTS = [
   'from-blue-600 to-teal-400',
 ];
 
+// Image card size constant - used for both reference images and variants
+const IMAGE_CARD_SIZE = 'w-[130px] h-[130px]';
+
 export const MarketingView: React.FC = () => {
   const [content, setContent] = useState<ContentPiece[]>(MOCK_CONTENT);
   const [activeTab, setActiveTab] = useState<'generate' | 'pending' | 'calendar' | 'published'>('generate');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [promptInstructions, setPromptInstructions] = useState<string>('');
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>('idle');
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -360,25 +363,36 @@ export const MarketingView: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (files.length > 0) {
+      handleMultipleImageUpload(files.slice(0, 3 - uploadedImages.length));
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleMultipleImageUpload(Array.from(files).slice(0, 3 - uploadedImages.length));
     }
   };
 
-  const handleImageUpload = (file: File) => {
+  const handleMultipleImageUpload = (files: File[]) => {
+    if (files.length === 0) return;
     setGenerationStatus('uploading');
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    
+    const promises = files.map(file => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(promises).then(newImages => {
       setTimeout(() => {
-        setUploadedImage(e.target?.result as string);
+        setUploadedImages(prev => [...prev, ...newImages].slice(0, 3));
         setGenerationStatus('idle');
         setSelectedStyle(null);
         setGeneratedCaption('');
@@ -386,8 +400,17 @@ export const MarketingView: React.FC = () => {
         setSelectedVariant(null);
         setIsEditingCaption(false);
       }, 400);
-    };
-    reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    if (uploadedImages.length === 1) {
+      setSelectedStyle(null);
+      setGeneratedCaption('');
+      setGeneratedVariants([]);
+      setSelectedVariant(null);
+    }
   };
 
   const handlePlatformToggle = (platformId: Platform) => {
@@ -411,7 +434,6 @@ export const MarketingView: React.FC = () => {
     setTimeout(() => {
       const captions = SAMPLE_CAPTIONS[styleId] || SAMPLE_CAPTIONS['render'];
       
-      // Use demo images for variants (always show the same 3 AI-generated renders)
       const variants: GeneratedVariant[] = [
         { id: 1, gradient: VARIANT_GRADIENTS[0], caption: captions[0], image: DEMO_VARIANT_IMAGES[0] },
         { id: 2, gradient: VARIANT_GRADIENTS[1], caption: captions[1], image: DEMO_VARIANT_IMAGES[1] },
@@ -445,7 +467,6 @@ export const MarketingView: React.FC = () => {
       const shuffledCaptions = [...captions].sort(() => Math.random() - 0.5);
       const shuffledGradients = [...VARIANT_GRADIENTS].sort(() => Math.random() - 0.5);
       
-      // Keep using demo images but shuffle gradients and captions
       const variants: GeneratedVariant[] = [
         { id: 1, gradient: shuffledGradients[0], caption: shuffledCaptions[0], image: DEMO_VARIANT_IMAGES[0] },
         { id: 2, gradient: shuffledGradients[1], caption: shuffledCaptions[1], image: DEMO_VARIANT_IMAGES[1] },
@@ -466,7 +487,7 @@ export const MarketingView: React.FC = () => {
   };
 
   const handleClearAll = () => {
-    setUploadedImage(null);
+    setUploadedImages([]);
     setPromptInstructions('');
     setGeneratedCaption('');
     setGenerationStatus('idle');
@@ -528,11 +549,10 @@ export const MarketingView: React.FC = () => {
     }
   };
 
-  // Get the current variant's image for preview
   const getCurrentVariantImage = () => {
-    if (!selectedVariant || generatedVariants.length === 0) return uploadedImage;
+    if (!selectedVariant || generatedVariants.length === 0) return uploadedImages[0] || null;
     const variant = generatedVariants.find(v => v.id === selectedVariant);
-    return variant?.image || uploadedImage;
+    return variant?.image || uploadedImages[0] || null;
   };
 
   return (
@@ -651,7 +671,7 @@ export const MarketingView: React.FC = () => {
 
             {/* Bottom Left: Elegí un estilo */}
             <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
-              uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
+              uploadedImages.length > 0 ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
               <h3 className="text-sm font-medium text-gray-900 mb-4">Elegí un estilo</h3>
               <div className="h-[calc(100%-32px)] flex items-center justify-center">
@@ -666,7 +686,7 @@ export const MarketingView: React.FC = () => {
                         onClick={() => handleStyleSelect(style.id)}
                         onMouseEnter={() => setHoveredStyle(style.id)}
                         onMouseLeave={() => setHoveredStyle(null)}
-                        disabled={!uploadedImage || generationStatus === 'generating'}
+                        disabled={uploadedImages.length === 0 || generationStatus === 'generating'}
                         className="group flex flex-col items-center gap-2"
                       >
                         <div className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
@@ -711,7 +731,7 @@ export const MarketingView: React.FC = () => {
 
             {/* Bottom Right: Instrucciones */}
             <div className={`bg-white rounded-2xl border border-gray-100 p-5 h-[180px] transition-opacity ${
-              uploadedImage ? 'opacity-100' : 'opacity-50 pointer-events-none'
+              uploadedImages.length > 0 ? 'opacity-100' : 'opacity-50 pointer-events-none'
             }`}>
               <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <MessageSquare size={14} />
@@ -730,76 +750,97 @@ export const MarketingView: React.FC = () => {
 
           {/* Bottom Row: Upload + Preview - Symmetric Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Left Column: Reference Image + Variants */}
+            {/* Left Column: Reference Images + Variants - Same height cards */}
             <div className="flex flex-col gap-5">
-              {/* Reference Image Card */}
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex-shrink-0">
-                {!uploadedImage ? (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`relative p-8 text-center cursor-pointer transition-all h-[180px] flex flex-col items-center justify-center ${
-                      isDragging ? 'bg-gray-50' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    {generationStatus === 'uploading' ? (
-                      <div>
-                        <Loader2 size={32} className="text-gray-400 animate-spin mx-auto mb-3" />
-                        <p className="text-gray-600 font-medium">Subiendo...</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-colors ${
-                          isDragging ? 'bg-gray-200' : 'bg-gray-100'
-                        }`}>
-                          <ImageIcon size={24} className="text-gray-400" />
-                        </div>
-                        <p className="text-gray-700 font-medium mb-1">
-                          Arrastrá una imagen o hacé click
-                        </p>
-                        <p className="text-sm text-gray-400">PNG, JPG hasta 10MB</p>
-                      </div>
-                    )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </div>
-                ) : (
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <Image size={14} />
-                        Imagen de referencia
-                      </h3>
-                      <button
-                        onClick={handleClearAll}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                    <div className="relative rounded-xl overflow-hidden bg-gray-100 h-[130px] flex items-center justify-center">
+              {/* Reference Images Card - Fixed height */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[240px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <Image size={14} />
+                    Imágenes de referencia
+                  </h3>
+                  {uploadedImages.length > 0 && (
+                    <span className="text-xs text-gray-400">{uploadedImages.length}/3</span>
+                  )}
+                </div>
+                
+                <div className="flex justify-center gap-4">
+                  {/* Show uploaded images */}
+                  {uploadedImages.map((img, index) => (
+                    <div 
+                      key={index} 
+                      className={`relative ${IMAGE_CARD_SIZE} rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 group`}
+                    >
                       <img 
-                        src={uploadedImage} 
-                        alt="Preview" 
-                        className="max-w-full max-h-full object-contain"
+                        src={img} 
+                        alt={`Reference ${index + 1}`} 
+                        className="w-full h-full object-contain p-2"
                       />
+                      <button
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-1.5 right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} className="text-white" />
+                      </button>
+                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                        {index + 1}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ))}
+                  
+                  {/* Upload button if less than 3 images */}
+                  {uploadedImages.length < 3 && (
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
+                        isDragging 
+                          ? 'border-gray-400 bg-gray-100' 
+                          : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+                      }`}
+                    >
+                      {generationStatus === 'uploading' ? (
+                        <Loader2 size={24} className="text-gray-400 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus size={24} className="text-gray-400 mb-1" />
+                          <span className="text-[10px] text-gray-400 text-center px-2">
+                            {uploadedImages.length === 0 ? 'Subir' : 'Agregar'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Empty placeholders to maintain grid */}
+                  {uploadedImages.length === 0 && (
+                    <>
+                      <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50`} />
+                      <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50`} />
+                    </>
+                  )}
+                  {uploadedImages.length === 1 && (
+                    <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50`} />
+                  )}
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
 
-              {/* Variants Card - Square cards without background colors */}
-              {uploadedImage && generatedVariants.length > 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-medium text-gray-900">Elegí una variante</h3>
+              {/* Variants Card - Fixed height */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[240px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-gray-900">Variantes generadas</h3>
+                  {generatedVariants.length > 0 && (
                     <button 
                       onClick={handleRegenerate}
                       disabled={isRegenerating}
@@ -812,7 +853,10 @@ export const MarketingView: React.FC = () => {
                       )}
                       Regenerar
                     </button>
-                  </div>
+                  )}
+                </div>
+                
+                {generatedVariants.length > 0 ? (
                   <div className="flex justify-center gap-4">
                     {generatedVariants.map((variant) => {
                       const isSelected = selectedVariant === variant.id;
@@ -820,7 +864,7 @@ export const MarketingView: React.FC = () => {
                         <button
                           key={variant.id}
                           onClick={() => handleVariantSelect(variant.id)}
-                          className={`relative rounded-xl overflow-hidden border-2 transition-all w-[140px] aspect-square bg-gray-50 ${
+                          className={`relative ${IMAGE_CARD_SIZE} rounded-xl overflow-hidden border-2 transition-all bg-gray-50 ${
                             isSelected 
                               ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
                               : 'border-gray-200 hover:border-gray-400'
@@ -832,45 +876,40 @@ export const MarketingView: React.FC = () => {
                             className="w-full h-full object-contain p-2"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = uploadedImage || '';
+                              target.src = uploadedImages[0] || '';
                             }}
                           />
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                            <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
                               <Check size={12} className="text-white" />
                             </div>
                           )}
-                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                          <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                             {variant.id}
                           </div>
                         </button>
                       );
                     })}
                   </div>
-                </div>
-              )}
-
-              {/* Loading state for variants */}
-              {uploadedImage && generationStatus === 'generating' && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center justify-center">
-                  <Loader2 size={32} className="text-gray-400 animate-spin mb-3" />
-                  <p className="text-gray-500 font-medium">Generando variantes...</p>
-                  <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
-                </div>
-              )}
-
-              {/* Empty state when no variants */}
-              {uploadedImage && generationStatus === 'idle' && generatedVariants.length === 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center justify-center">
-                  <Sparkles size={32} className="text-gray-300 mb-3" />
-                  <p className="text-gray-500 font-medium">Elegí un estilo</p>
-                  <p className="text-sm text-gray-400 mt-1">para generar variantes</p>
-                </div>
-              )}
+                ) : generationStatus === 'generating' ? (
+                  <div className="flex flex-col items-center justify-center h-[calc(100%-40px)]">
+                    <Loader2 size={28} className="text-gray-400 animate-spin mb-2" />
+                    <p className="text-sm text-gray-500">Generando variantes...</p>
+                  </div>
+                ) : (
+                  <div className="flex justify-center gap-4">
+                    <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex items-center justify-center`}>
+                      <Sparkles size={20} className="text-gray-300" />
+                    </div>
+                    <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50`} />
+                    <div className={`${IMAGE_CARD_SIZE} rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50`} />
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Right Column: Preview */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
+            {/* Right Column: Preview - Same total height as left column */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 h-[500px] flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900 flex items-center gap-2">
                   <Eye size={16} />
@@ -888,10 +927,10 @@ export const MarketingView: React.FC = () => {
                 )}
               </div>
               
-              {uploadedImage && selectedVariant && generatedVariants.length > 0 ? (
+              {uploadedImages.length > 0 && selectedVariant && generatedVariants.length > 0 ? (
                 <div className="flex-1 flex flex-col">
                   {/* Phone Mockup */}
-                  <div className="flex justify-center flex-1 items-start pt-2">
+                  <div className="flex justify-center flex-1 items-center">
                     <div className="bg-gray-900 rounded-[2rem] p-2 shadow-2xl" style={getMockupStyle(selectedFormat)}>
                       <div className="bg-white rounded-[1.5rem] overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
@@ -902,7 +941,6 @@ export const MarketingView: React.FC = () => {
                           <MoreVertical size={12} className="text-gray-400" />
                         </div>
                         
-                        {/* Preview without gradient - clean background */}
                         <div className={`${getAspectClass(selectedFormat)} bg-gray-100 flex items-center justify-center relative`}>
                           <img 
                             src={getCurrentVariantImage() || ''} 
@@ -910,7 +948,7 @@ export const MarketingView: React.FC = () => {
                             className="w-full h-full object-contain p-4"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              if (uploadedImage) target.src = uploadedImage;
+                              if (uploadedImages[0]) target.src = uploadedImages[0];
                             }}
                           />
                         </div>
@@ -934,7 +972,7 @@ export const MarketingView: React.FC = () => {
                   
                   {/* Caption */}
                   {generatedCaption && (
-                    <div className="bg-gray-50 rounded-xl p-3 mt-4">
+                    <div className="bg-gray-50 rounded-xl p-3 mt-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-500">Caption</span>
                         {!isEditingCaption && (
@@ -983,36 +1021,35 @@ export const MarketingView: React.FC = () => {
                   
                   {/* Action Buttons */}
                   {generationStatus === 'complete' && (
-                    <div className="space-y-2 mt-4">
+                    <div className="flex gap-2 mt-3">
                       <button 
                         onClick={handleApproveGenerated}
                         disabled={!selectedVariant}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Check size={16} />
-                        Aprobar y programar
+                        Aprobar
                       </button>
                       
                       <button 
                         onClick={handleClearAll}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+                        className="px-4 py-2.5 text-gray-600 rounded-xl font-medium hover:bg-gray-100 transition-colors"
                       >
-                        <Trash2 size={14} />
-                        Descartar
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
                     <Sparkles size={28} className="text-gray-300" />
                   </div>
                   <p className="text-gray-500 font-medium">
-                    {!uploadedImage ? 'Subí una imagen' : 'Elegí un estilo'}
+                    {uploadedImages.length === 0 ? 'Subí una imagen' : 'Elegí un estilo'}
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    {!uploadedImage ? 'para empezar a crear' : 'para generar variantes'}
+                    {uploadedImages.length === 0 ? 'para empezar a crear' : 'para generar variantes'}
                   </p>
                 </div>
               )}
